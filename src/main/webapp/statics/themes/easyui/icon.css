@@ -1,0 +1,239 @@
+/*保存*/
+.icon-baocun {
+	background: url('icons/baocun.png') no-repeat center center;
+}
+
+/*ok*/
+.icon-ok {
+	background: url('icons/ok.png') no-repeat center center;
+}
+
+
+/*取消*/
+.icon-quxiao {
+	background: url('icons/quxiao.png') no-repeat center center;
+}
+
+
+/*查询(查看)*/
+.icon-search {
+	background: url('icons/chaxun.png') no-repeat center center;
+}
+
+/*撤销*/
+.icon-chexiao {
+	background: url('icons/chexiao.png') no-repeat center center;
+}
+
+/*撤销记录*/
+.icon-chexiaojilu {
+	background: url('icons/chexiaojilu.png') no-repeat center center;
+}
+
+/*重置*/
+.icon-reload {
+	background: url('icons/chongzhi.png') no-repeat center center;
+}
+
+/*打开*/
+.icon-dakai {
+	background: url('icons/dakai.png') no-repeat center center;
+}
+
+/*导出*/
+.icon-export {
+	background: url('icons/daochu.png') no-repeat center center;
+}
+
+/*打印*/
+.icon-dayin {
+	background: url('icons/dayin.png') no-repeat center center;
+}
+
+/*返回上级*/
+.icon-fanhuishangji {
+	background: url('icons/fanhuishangji.png') no-repeat center center;
+}
+
+/*过滤*/
+.icon-guolv {
+	background: url('icons/guolv.png') no-repeat center center;
+}
+
+/*核收*/
+.icon-heshou {
+	background: url('icons/heshou.png') no-repeat center center;
+}
+
+/*回滚*/
+.icon-huigun {
+	background: url('icons/huigun.png') no-repeat center center;
+}
+
+/*禁用(停用)*/
+.icon-jinyong {
+	background: url('icons/jinyong.png') no-repeat center center;
+}
+
+/*清除*/
+.icon-qingchu {
+	background: url('icons/qingchu.png') no-repeat center center;
+}
+
+/*启用*/
+.icon-qiyong {
+	background: url('icons/qiyong.png') no-repeat center center;
+}
+
+/*入库*/
+.icon-ruku {
+	background: url('icons/ruku.png') no-repeat center center;
+}
+
+/*扫描*/
+.icon-saomiao {
+	background: url('icons/saomiao.png') no-repeat center center;
+}
+
+/*删除(批量删除)*/
+.icon-remove {
+	background: url('icons/shanchu.png') no-repeat center center;
+}
+
+/*审报告*/
+.icon-shenbaogao {
+	background: url('icons/shenbaogao.png') no-repeat center center;
+}
+
+/*申请*/
+.icon-shenqing {
+	background: url('icons/shenqing.png') no-repeat center center;
+}
+
+/*设置*/
+.icon-shezhi {
+	background: url('icons/shezhi.png') no-repeat center center;
+}
+
+/*填报告*/
+.icon-tianbaogao {
+	background: url('icons/tianbaogao.png') no-repeat center center;
+}
+
+/*条码*/
+.icon-tiaoma {
+	background: url('icons/tiaoma.png') no-repeat center center;
+}
+
+/*条码*/
+.icon-man {
+	background: url('icons/man.png') no-repeat center center;
+}
+
+/*不通过*/
+.icon-butongguo {
+	background: url('icons/butongguo.png') no-repeat center center;
+}
+
+/*通过*/
+.icon-tongguo {
+	background: url('icons/tongguo.png') no-repeat center center;
+}
+
+/*修改(编辑)*/
+.icon-edit {
+	background: url('icons/xiugai.png') no-repeat center center;
+}
+
+/*仪器类型*/
+.icon-yiqileixing {
+	background: url('icons/yiqileixing.png') no-repeat center center;
+}
+
+/*仪器子类型*/
+.icon-yiqizileixing {
+	background: url('icons/yiqizileixing.png') no-repeat center center;
+}
+
+/*右箭头*/
+.icon-youjiantou {
+	background: url('icons/youjiantou.png') no-repeat center center;
+}
+
+/*预览*/
+.icon-yulan {
+	background: url('icons/yulan.png') no-repeat center center;
+}
+
+/*增加*/
+.icon-add {
+	background: url('icons/zengjia.png') no-repeat center center;
+}
+
+/*左箭头*/
+.icon-zuojiantou {
+	background: url('icons/zuojiantou.png') no-repeat center center;
+}
+
+/*弹出框确定*/
+.icon-save {
+	background: url('icons/filesave.png') no-repeat center center;
+}
+
+/*弹出框取消*/
+.icon-redo {
+	background: url('icons/redo.png') no-repeat center center;
+}
+
+/*参考值*/
+.icon-cankaozhi{
+	background: url('icons/cankaozhi_edit.png') no-repeat center center;
+}
+
+/*查询列表*/
+.icon-checkList{
+	background: url('icons/check_list-mini.png') no-repeat center center;
+}
+
+/*设置*/
+.icon-cog{
+	background: url('icons/cog.png') no-repeat center center
+}
+
+/*时间整理*/
+.icon-dzxtb{
+	background: url('icons/dzxtb.png') no-repeat center center
+}
+
+/*计算器*/
+.icon-cyjs{
+	background: url('icons/cyjs.png') no-repeat center center
+}
+
+/*	清楚标志*/
+.icon-clear {
+   		 background: url(icons/clear.png) no-repeat center center;
+}
+
+/*回退*/
+.icon-undo {
+	background: url(icons/undo.png) no-repeat center center;
+}
+
+/*排序*/
+.icon-sort_number {
+	background: url(icons/sort_number.png) no-repeat center center;
+}
+
+/*统计*/
+.icon-chart {
+	background: url(icons/chart.png) no-repeat center center;
+}
+
+.icon-detail_info {
+	background: url(icons/detail_info.png) no-repeat center center;
+}
+/*星星*/
+.icon-xingxing {
+	background: url(icons/xingxing.png) no-repeat center center;
+}
