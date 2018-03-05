@@ -4,6 +4,7 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.study.cancer.dao.ApplyMapper;
 import com.study.cancer.model.Apply;
+import com.study.cancer.model.ApplyListVo;
 import com.study.cancer.model.CommonResult;
 import com.study.cancer.model.MedicalRecord;
 import com.study.cancer.service.ApplyService;
@@ -34,7 +35,7 @@ public class ApplyServiceImpl implements ApplyService {
             }
 
         } else {
-            int insert = applyMapper.insert(apply);
+            int insert = applyMapper.insertSelective(apply);
             if (insert > 0) {
                 result.setSuccess(true);
                 result.setData(apply.getId());
@@ -47,12 +48,14 @@ public class ApplyServiceImpl implements ApplyService {
     }
 
     @Override
-    public PageInfo getSelfList(int page, int rows, String applyDate, String state) {
+    public PageInfo getSelfList(int page, int rows, Integer patientId, String applyStartDate, String applyEndDate, String state) {
         PageHelper.startPage(page, rows);
         HashMap<Object, Object> map = new HashMap<>();
-        map.put("applyDate", applyDate);
+        map.put("patientId", patientId);
+        map.put("applyStartDate", applyStartDate);
+        map.put("applyEndDate", applyEndDate);
         map.put("state", state);
-        List<Apply> applyList = applyMapper.selectList(map);
+        List<ApplyListVo> applyList = applyMapper.selectList(map);
         return new PageInfo(applyList);
     }
 }

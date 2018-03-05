@@ -114,11 +114,11 @@ public class BaseController {
         timer.schedule(myTimeTask, 5 * 60 * 1000);
         request.setTemplateParam("{\"code\":" + code + "}");
         //请求失败这里会抛ClientException异常
-        SendSmsResponse sendSmsResponse = acsClient.getAcsResponse(request);
+        /*SendSmsResponse sendSmsResponse = acsClient.getAcsResponse(request);
         if (sendSmsResponse.getCode() != null && sendSmsResponse.getCode().equals("OK")) {
             //请求成功
             return "success";
-        }
+        }*/
         return "fail";
     }
 

@@ -13,6 +13,26 @@
           media="screen" rel="stylesheet" type="text/css">
     <link href="${ctxStatic}/themes/easyui/icon.css" media="screen"
           media="screen" rel="stylesheet" type="text/css">
+    <style type="text/css">
+        input {
+            height: 25px;
+            width: 160px;
+            font-size: 15px;
+            margin-left: 15px;
+            background-color: #f2f2f2;
+        }
+
+        select {
+            height: 25px;
+            width: 60px;
+            margin-left: 15px;
+            background-color: #f2f2f2;
+        }
+
+        span {
+            font-size: 15px;
+        }
+    </style>
 </head>
 
 <body style="background-color: #f2f2f2">
@@ -22,21 +42,20 @@
         <table width="100%" id="dtList" toolbar="#tb"></table>
         <div id="tb" style="margin:5px;height:auto">
             <div style="margin-bottom: 5px">
-                <span>患者姓名：</span>
-                <input class="easyui-textbox" id="name">
-                <span style="margin-left: 15px">就诊号：</span>
-                <input class="easyui-textbox" id="treatmentNo">
-                <span style="margin-left: 15px">就诊卡号：</span>
-                <input class="easyui-textbox" id="treatmentCardId">
-                <span style="margin-right: 15px;margin-left: 10px">日期</span>
+                <span>申请单状态：</span>
+                <select editable="false" style="width: 120px" class="easyui-combobox" id="state">
+                    <option value="">全部</option>
+                    <option value="0">正在排队</option>
+                    <option value="1">排队完成</option>
+                    <option value="2">已入院</option>
+                    <option value="3">爽约</option>
+                </select>
+                <span style="margin-right: 15px;margin-left: 15px">申请日期:</span>
                 <span style="margin-right: 15px">从</span>
-                <input class="easyui-textbox" id="startDate">
-                <span style="margin-left: 15px;margin-right: 10px">到</span>
-                <input class="easyui-textbox" id="endDate">
-            </div>
-            <div>
-                <a id="search" href="javascript:void(0);" class="easyui-linkbutton" data-options="iconCls:'icon-search'">查询</a>
-                <a id="export" href="javascript:void(0);" class="easyui-linkbutton" data-options="iconCls:'icon-export'">导出</a>
+                <input class="easyui-textbox" id="applyStartDate">
+                <span style="margin-left: 15px;margin-right: 15px">到</span>
+                <input class="easyui-textbox" id="applyEndDate">
+                <a style="margin-left: 15px" id="search" href="javascript:void(0);" class="easyui-linkbutton" data-options="iconCls:'icon-search'">查询</a>
             </div>
         </div>
     </div>
@@ -49,8 +68,55 @@
         type="text/javascript" charset="UTF-8"></script>
 <script src="${ctxStatic}/js/idCardNoValidation.js"></script>
 <script type="text/javascript">
+    $("#search").click(function () {
+        $('#dtList').datagrid('reload');
+    });
+    $("#applyStartDate").datebox({
+        editable: false,
+        formatter: function (date) {
+            var y = date.getFullYear();
+            var m = date.getMonth() + 1;
+            var d = date.getDate();
+            if (m < 10)
+                m = '0' + m;
+            if (d < 10)
+                d = '0' + d;
+            start_date = y + '-' + m + '-' + d;
+            return y + '-' + m + '-' + d;
+        },
+        parser: function (s) {// 配置parser，返回选择的日期
+            var t = Date.parse(s);
+            if (!isNaN(t)) {
+                return new Date(t);
+            } else {
+                return new Date();
+            }
+        }
+    });
+    $("#applyEndDate").datebox({
+        editable: false,
+        formatter: function (date) {
+            var y = date.getFullYear();
+            var m = date.getMonth() + 1;
+            var d = date.getDate();
+            if (m < 10)
+                m = '0' + m;
+            if (d < 10)
+                d = '0' + d;
+            end_date = y + '-' + m + '-' + d;
+            return y + '-' + m + '-' + d;
+        },
+        parser: function (s) {// 配置parser，返回选择的日期
+            var t = Date.parse(s);
+            if (!isNaN(t)) {
+                return new Date(t);
+            } else {
+                return new Date();
+            }
+        }
+    });
     $('#dtList').datagrid({
-        url: '${ctx}/apply/getList',
+        url: '${ctx}/apply/getSelfList',
         idField: 'id',
         title: '',
         fit: true,
@@ -62,20 +128,14 @@
         fitColumns: true,
         nowrap: true,
         queryParams: {
-            name: function () {
-                return $("#name").val()
+            state: function () {
+                return $("#state").val()
             },
-            treatmentNo: function () {
-                return $("#treatmentNo").val()
+            applyStartDate: function () {
+                return $("#applyStartDate").val()
             },
-            idNum: function () {
-                return $("#idNum").val()
-            },
-            startDate: function () {
-                return $("#startDate").val()
-            },
-            endDate: function () {
-                return $("#endDate").val()
+            applyEndDate: function () {
+                return $("#applyEndDate").val()
             }
         },
         loadFilter: function (data) {
@@ -93,65 +153,51 @@
                     checkbox: true
                 },
                 {
-                    field: 'patientname',
-                    title: '患者姓名',
-                    width: 50
-                },
-                {
-                    field: 'patientid',
-                    title: '患者ID',
-                    width: 40
-                },
-                {
-                    field: 'treatmentNo',
+                    field: 'medicalRecordNo',
                     title: '就诊号',
                     width: 80
                 },
-
                 {
-                    field: 'gender',
-                    title: '性别',
-                    width: 40
+                    field: 'state',
+                    title: '状态',
+                    width: 80,
+                    formatter: function (value, row, index) {
+                        if (value=='0') {
+                            return "正在排队";
+                        }
+                        if (value=='1') {
+                            return "排队完成";
+                        }
+                        if (value=='2') {
+                            return "已入院";
+                        }
+                        if (value=='3') {
+                            return "<span style='color: red'>爽约</span>";
+                        }
+                    }
                 },
                 {
-                    field: 'age',
-                    title: '年龄',
-                    width: 40
-                },
-                {
-                    field: 'idCardType',
-                    title: '证件类型',
-                    width: 50
-                },
-                {
-                    field: 'idCardNo',
-                    title: '证件号码',
-                    width: 100
-                },
-                {
-                    field: 'typeName',
-                    title: '病历类型',
-                    width: 80
-                },
-                {
-                    field: 'lastVersionDatetime',
-                    title: '病历完成时间',
+                    field: 'applyDate',
+                    title: '申请时间',
                     width: 120
                 },
                 {
-                    field: 'action',
-                    title: '操作',
-                    width: 150,
+                    field: 'toHospitalDate',
+                    title: '入院时间',
+                    width: 120,
                     formatter: function (value, row, index) {
-                        return "<a class='editcls' style='float:left;' class='easyui-linkbutton' onclick='editRow(" + row.id + "," + row.treatmentNo + ",\""+row.typeName+"\")'>编辑</a>" +
-                            "<a class='showcls'  class='easyui-linkbutton' onclick='showRecordContent(" + row.id + ")'>查看</a>";
+                        var res;
+                        if (value==null) {
+                            res = '等待安排'
+                        } else {
+                            res = value;
+                        }
+                        return res;
                     }
                 }
             ]
         ],
         onLoadSuccess: function (data) {
-            $('.editcls').linkbutton({text: '编辑', plain: true, iconCls: 'icon-edit'});
-            $('.showcls').linkbutton({text: '查看', plain: true, iconCls: 'icon-yulan'});
             $("#dtList").datagrid("clearSelections");
             $('#dtList').datagrid('fixRowHeight');
         }

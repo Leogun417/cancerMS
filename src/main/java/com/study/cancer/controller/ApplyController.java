@@ -15,7 +15,6 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.Date;
-import java.util.List;
 
 @Controller
 @RequestMapping(value = "/apply")
@@ -28,6 +27,11 @@ public class ApplyController extends BaseController{
     @RequestMapping("/fillIn")
     public String fillIn() {
         return "/apply";
+    }
+
+    @RequestMapping("/myApplyList")
+    public String myApplyList() {
+        return "/apply_list";
     }
 
     @RequestMapping(value = "/add",method = RequestMethod.POST)
@@ -59,14 +63,24 @@ public class ApplyController extends BaseController{
      *
      * @param page
      * @param rows
-     * @param applyDate
-     * @param state 正在排队 排队完成 入院 爽约
+     * @param applyStartDate
+     * @param applyEndDate
+     * @param state  正在排队 排队完成 入院 爽约
      * @return
      */
     @RequestMapping("/getSelfList")
     @ResponseBody
-    public PageInfo getSelfList(int page, int rows, String applyDate, String state) {
-        PageInfo applyList = applyService.getSelfList(page, rows, applyDate, state);
+    public PageInfo getSelfList(int page, int rows, String applyStartDate, String applyEndDate, String state) {
+        if ("".equals(applyEndDate)) {
+            applyEndDate = null;
+        }
+        if ("".equals(applyStartDate)) {
+            applyStartDate = null;
+        }
+        if ("".equals(state)) {
+            state = null;
+        }
+        PageInfo applyList = applyService.getSelfList(page, rows, getLoginUser().getId(), applyStartDate, applyEndDate, state);
         return applyList;
     }
 

@@ -11,5 +11,5 @@ import java.util.Map;
 public interface ApplyService {
     CommonResult addApply(Apply apply);
 
-    PageInfo getSelfList(int page, int rows, String applyDate, String state);
+    PageInfo getSelfList(int page, int rows, Integer patientId, String applyStartDate, String applyEndDate, String state);
 }

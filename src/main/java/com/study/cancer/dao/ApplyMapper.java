@@ -1,6 +1,7 @@
 package com.study.cancer.dao;
 
 import com.study.cancer.model.Apply;
+import com.study.cancer.model.ApplyListVo;
 
 import java.util.HashMap;
 import java.util.List;
@@ -56,5 +57,5 @@ public interface ApplyMapper {
 
     List<Apply> selectByPatientId(Integer patientId);
 
-    List<Apply> selectList(HashMap<Object, Object> map);
+    List<ApplyListVo> selectList(HashMap<Object, Object> map);
 }
