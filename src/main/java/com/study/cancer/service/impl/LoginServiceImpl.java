@@ -64,7 +64,7 @@ public class LoginServiceImpl implements LoginService {
     public CommonResult getMenueByLevel(String authorityLevel) {
         CommonResult<Object> result = new CommonResult<>();
         List<Menue> menue = menueMapper.selectByAuthorityLevel(authorityLevel);
-        if (menue != null) {
+        if (menue != null && menue.size() > 0) {
             result.setSuccess(true);
             result.setData(menue);
         } else {

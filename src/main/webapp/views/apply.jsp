@@ -52,32 +52,53 @@
 <div class="datagrid-toolbar"></div>
 <div>
     <div style="padding-top: 10px" class="row">
-        <form  method="post" id="applyForm" enctype="multipart/form-data">
+        <form method="post" id="applyForm" enctype="multipart/form-data">
             <div class="userInfo">
                 <div class="row ">
                     <div class="col-md-6 col-sm-6">
                         <div class="cancer-group row">
                             <label class="pull-left label-lg"><span>*</span>姓　　名:</label>
                             <div>
-                                <input readonly class="easyui-validatebox" required="true"
-                                       data-options="validType:'isChinese'" type="text" name="username"
-                                       id="username" value="${loginUser.username}"/>
+                                <c:if test="${not empty edit}">
+                                    <input readonly class="easyui-validatebox" required="true"
+                                           data-options="validType:'isChinese'" type="text" name="username"
+                                           id="username" value="${loginUser.username}"/>
+                                </c:if>
+                                <c:if test="${empty edit}">
+                                    <input readonly class="easyui-validatebox" required="true"
+                                           data-options="validType:'isChinese'" type="text" name="username"
+                                           id="username" value="${applyInfo.username}"/>
+                                </c:if>
                             </div>
                         </div>
                         <div class="cancer-group row">
                             <label class="pull-left label-lg"><span>*</span>年　　龄:</label>
                             <div>
-                                <input readonly class="easyui-validatebox" required="true"
-                                       data-options="validType:'isAge'" type="text" name="age" id="age"
-                                       value="${loginUser.age}"/>
+                                <c:if test="${not empty edit}">
+                                    <input readonly class="easyui-validatebox" required="true"
+                                           data-options="validType:'isAge'" type="text" name="age" id="age"
+                                           value="${loginUser.age}"/>
+                                </c:if>
+                                <c:if test="${empty edit}">
+                                    <input readonly class="easyui-validatebox" required="true"
+                                           data-options="validType:'isAge'" type="text" name="age" id="age"
+                                           value="${applyInfo.age}"/>
+                                </c:if>
                             </div>
                         </div>
                         <div class="cancer-group row">
                             <label class="pull-left label-lg"><span>*</span>手机号码:</label>
                             <div>
-                                <input readonly class="easyui-validatebox" required="true"
-                                       data-options="validType:'isMobile'" type="text" name="phoneNumber"
-                                       id="phoneNumber" value="${loginUser.phoneNumber}"/>
+                                <c:if test="${not empty edit}">
+                                    <input readonly class="easyui-validatebox" required="true"
+                                           data-options="validType:'isMobile'" type="text" name="phoneNumber"
+                                           id="phoneNumber" value="${loginUser.phoneNumber}"/>
+                                </c:if>
+                                <c:if test="${empty edit}">
+                                    <input readonly class="easyui-validatebox" required="true"
+                                           data-options="validType:'isMobile'" type="text" name="phoneNumber"
+                                           id="phoneNumber" value="${applyInfo.phoneNumber}"/>
+                                </c:if>
                             </div>
                         </div>
 
@@ -86,37 +107,61 @@
                         <div class="cancer-group row">
                             <label for="" class="pull-left label-lg"><span>*</span>性　　别:</label>
                             <div>
-                                <select disabled class="easyui-validatebox" required="true" name="sex" id="sex">
-                                    <c:if test="${loginUser.sex eq '男'}">
-                                        <option value="男" selected>男</option>
-                                        <option value="女">女</option>
-                                    </c:if>
-                                    <c:if test="${loginUser.sex eq '女'}">
-                                        <option value="男">男</option>
-                                        <option value="女" selected>女</option>
-                                    </c:if>
-                                </select>
+                                <c:if test="${not empty edit}">
+                                    <select disabled class="easyui-validatebox" required="true" name="sex" id="sex">
+                                        <c:if test="${loginUser.sex eq '男'}">
+                                            <option value="男" selected>男</option>
+                                            <option value="女">女</option>
+                                        </c:if>
+                                        <c:if test="${loginUser.sex eq '女'}">
+                                            <option value="男">男</option>
+                                            <option value="女" selected>女</option>
+                                        </c:if>
+                                    </select>
+                                </c:if>
+                                <c:if test="${empty edit}">
+                                    <select disabled class="easyui-validatebox" required="true" name="sex" id="sex">
+                                        <c:if test="${applyInfo.sex eq '男'}">
+                                            <option value="男" selected>男</option>
+                                            <option value="女">女</option>
+                                        </c:if>
+                                        <c:if test="${applyInfo.sex eq '女'}">
+                                            <option value="男">男</option>
+                                            <option value="女" selected>女</option>
+                                        </c:if>
+                                    </select>
+                                </c:if>
                             </div>
                         </div>
                         <div class="cancer-group row">
                             <label for="" class="pull-left label-lg"><span>*</span>证件号码:</label>
                             <div>
-                                <input readonly class="easyui-validatebox" required="true"
-                                       data-options="validType:'isIdCard'" type="text" name="idCardNo"
-                                       id="idCardNo" value="${loginUser.idCardNo}"/>
+                                <c:if test="${not empty edit}">
+                                    <input readonly class="easyui-validatebox" required="true"
+                                           data-options="validType:'isIdCard'" type="text" name="idCardNo"
+                                           id="idCardNo" value="${loginUser.idCardNo}"/>
+                                </c:if>
+                                <c:if test="${empty edit}">
+                                    <input readonly class="easyui-validatebox" required="true"
+                                           data-options="validType:'isIdCard'" type="text" name="idCardNo"
+                                           id="idCardNo" value="${applyInfo.idCardNo}"/>
+                                </c:if>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="datagrid-toolbar"></div>
-            <a style="color:#0E2D5F;float: right" href="javascript:void(0);" onclick="toUserInfo()">个人信息有误？点击修改</a>
+            <c:if test="${not empty edit}">
+                <a style="color:#0E2D5F;float: right" href="javascript:void(0);" onclick="toUserInfo()">个人信息有误？点击修改</a>
+            </c:if>
             <div class="row" style="margin-top: 50px">
                 <div class="col-md-6 col-sm-6">
                     <div class="cancer-group row">
                         <label class="pull-left label-lg"><span>*</span>白细胞浓度:</label>
                         <div>
-                            <input style="font-size:15px;height: 25px;width: 160px;margin-left: 15px;background-color: #f2f2f2;"
+                            <input value="${applyInfo.leucocyteConcentration}"
+                                   style="font-size:15px;height: 25px;width: 160px;margin-left: 15px;background-color: #f2f2f2;"
                                    class="easyui-textbox" required="true"
                                    type="text" name="leucocyteConcentration"
                                    id="leucocyteConcentration"/>
@@ -127,7 +172,8 @@
                     <div class="cancer-group row">
                         <label class="pull-left label-lg"><span>*</span>中性粒细胞浓度:</label>
                         <div>
-                            <input style="font-size:15px;height: 25px;width: 160px;margin-left: 15px;background-color: #f2f2f2;"
+                            <input value="${applyInfo.neutrophilConcentration}"
+                                   style="font-size:15px;height: 25px;width: 160px;margin-left: 15px;background-color: #f2f2f2;"
                                    class="easyui-textbox" required="true"
                                    type="text" name="neutrophilConcentration"
                                    id="neutrophilConcentration"/>
@@ -137,38 +183,53 @@
                 <div class="col-md-12 col-sm-12">
                     <div class="cancer-group row">
                         <label class="pull-left label-lg">备　　注:</label>
-                        <textarea
-                                style="font-size:15px;margin-left:38px;height: 180px;width: 42%;border: solid 1px #626262;background-color: #f2f2f2;"></textarea>
+                        <textarea name="remark" id="remark"
+                                  style="font-size:15px;margin-left:25px;height: 180px;width: 42%;border: solid 1px #626262;background-color: #f2f2f2;">${applyInfo.remark}</textarea>
                     </div>
                 </div>
             </div>
 
             <div class="row" style="margin-bottom: 50px">
                 <div class="col-md-12 col-sm-12">
-                    <label class="pull-left label-lg" style="font-size:15px;margin-right: 15px"><span>*</span>身体检查材料:</label>
-                    <table id="fileTable">
-                        <tbody>
-                        <tr id="tr0">
-                            <td>
-                                <input id="file0" style="height:30px;width: 260px;" name="file0">
-                            </td>
-                            <td>
-                                <a style="margin-left: 15px" class="easyui-linkbutton"  data-options="iconCls:'icon-add'" href="javascript:void(0);" onclick="addRow()">新增</a>
-                            </td>
-                            <td>
-                                <a style="margin-left: 10px" class="easyui-linkbutton" data-options="iconCls:'icon-reload'" href="javascript:void(0);" onclick="delFile('file0')">清空</a>
-                            </td>
-                        </tr>
-                        </tbody>
-                    </table>
+                    <label class="pull-left label-lg"
+                           style="font-size:15px;margin-right: 15px"><span>*</span>检查材料:</label>
+                    <c:if test="${not empty edit}">
+                        <table id="fileTable">
+                            <tbody>
+                            <tr id="tr0">
 
+                                <td>
+                                    <input id="file0" style="height:30px;width: 260px;" name="file0">
+                                </td>
+                                <td>
+                                    <a style="margin-left: 15px" class="easyui-linkbutton"
+                                       data-options="iconCls:'icon-add'" href="javascript:void(0);" onclick="addRow()">新增</a>
+                                </td>
+                                <td>
+                                    <a style="margin-left: 15px" class="easyui-linkbutton"
+                                       data-options="iconCls:'icon-reload'" href="javascript:void(0);"
+                                       onclick="delFile('file0')">清空</a>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </c:if>
+                    <c:if test="${empty edit}">
+                        <table id="dtList" toolbar="#tb"></table>
+                    </c:if>
 
                 </div>
 
             </div>
             <div style="z-index: 9999; position: fixed ! important; right: 0px; bottom: 0px;background-color: rgba(98,98,98,0.3);width: 100%;height:35px">
-                <input type="submit" class="btn btn-primary"
-                       style="margin-left: 45%;" value="提交"/>
+                <c:if test="${not empty edit}">
+                    <input type="submit" class="btn btn-primary"
+                           style="margin-left: 45%;" value="提交"/>
+                </c:if>
+                <c:if test="${empty edit}">
+                    <button type="button" class="btn btn-primary"
+                            style="margin-left: 45%;">要求追加材料</button>
+                </c:if>
             </div>
 
         </form>
@@ -183,56 +244,133 @@
         type="text/javascript" charset="UTF-8"></script>
 <script src="${ctxStatic}/js/idCardNoValidation.js"></script>
 <script type="text/javascript">
+    <c:if test="${empty edit}">
+    $('input').each(function () {
+        $(this).attr("required", false);
+        $(this).attr("readonly", "readonly");
+    });
+    $('select').each(function () {
+        $(this).attr("readonly", "readonly");
+    });
+    $('textarea').each(function () {
+        $(this).attr("readonly", "readonly");
+    });
+    </c:if>
+
     function toUserInfo() {
-        parent.Open("用户信息",'/userInfo');
+        parent.Open("用户信息", '/userInfo');
     }
+
+    $('#dtList').datagrid({
+        url: '${ctx}/apply/getAttachments',
+        idField: 'id',
+        title: '',
+        width: $("#remark").width(),
+        fit: false,
+        loadMsg: '数据加载中...',
+        rownumbers: true,
+        singleSelect: true,
+        pagination: true,
+        pageSize:5,
+        pageList: [5, 10, 15],
+        fitColumns: true,
+        nowrap: true,
+        queryParams: {
+            applyId: function () {
+                return ${applyInfo.id}
+            }
+        },
+        loadFilter: function (data) {
+            var result = new Object();
+            result.total = data.total;
+            result.rows = data.list;
+            return result;
+        },
+        columns: [
+            [
+                {
+                    field: 'id',
+                    title: 'id',
+                    width: 20,
+                    checkbox: true
+                },
+                {
+                    field: 'attachmentName',
+                    title: '资料名称',
+                    width: 80
+                },
+                {
+                    field: 'action',
+                    title: '操作',
+                    width: 40,
+                    formatter: function (value, row, index) {
+                        return "<a class='down' href='javascript:void(0);' class='easyui-linkbutton' onclick=\"downFile('" + row.attachmentName + "',${applyInfo.medicalRecordNo})\"></a>"
+                    }
+                }
+            ]
+        ],
+        onLoadSuccess: function (data) {
+            $('.down').linkbutton({text: '下载', plain: true, iconCls: 'icon-xiazai'});
+            $("#dtList").datagrid("clearSelections");
+            $('#dtList').datagrid('fixRowHeight');
+        }
+    })
+
+    function downFile(attachmentName, medicalRecordNo) {
+        window.location.href="${ctx}/download?fileName="+attachmentName+"&medicalRecordNo="+medicalRecordNo;
+    }
+
     $(function () {
         $('#file0').filebox({
-            required : true,
+            required: true,
             buttonText: '选择文件',
-            prompt:'选择文件',
+            prompt: '选择文件',
             buttonAlign: 'right'
         })
     })
-    var num=0;
+    var num = 0;
+
     function delRow(id) {
-        $("#"+id).remove();
+        $("#" + id).remove();
         num--;
     }
+
     function addRow() {
         num++;
         var tbody = $("#fileTable tbody");
-        var newTr = '<tr id="tr'+num+'">' +
+        var newTr = '<tr id="tr' + num + '">' +
             '                            <td>' +
-            '                                <input id="file'+num+'" style="height:30px;width: 260px;" name="file'+num+'">' +
+            '                                <input id="file' + num + '" style="height:30px;width: 260px;" name="file' + num + '">' +
             '                            </td>' +
             '                            <td>' +
-            '                                <a id="delFile'+num+'" style="margin-left: 10px" href="javascript:void(0);" onclick="delFile(\'file'+num+'\')">清空</a>' +
+            '                                <a id="delFile' + num + '" style="margin-left: 15px" href="javascript:void(0);" onclick="delFile(\'file' + num + '\')">清空</a>' +
             '                            </td>' +
             '                            <td>' +
-            '                                <a id="delRow'+num+'" style="margin-left: 10px" href="javascript:void(0);" onclick="delRow(\'tr'+num+'\')">删除</a>' +
+            '                                <a id="delRow' + num + '" style="margin-left: 15px" href="javascript:void(0);" onclick="delRow(\'tr' + num + '\')">删除</a>' +
             '                            </td>' +
             '                        </tr>';
         tbody.append(newTr);
-        $('#file'+num).filebox({
-            required : true,
+        $('#file' + num).filebox({
+            required: true,
             buttonText: '选择文件',
-            prompt:'选择文件',
+            prompt: '选择文件',
             buttonAlign: 'right'
         })
-        $('#addRow'+num).linkbutton({
+        $('#addRow' + num).linkbutton({
             iconCls: 'icon-add'
         });
-        $('#delFile'+num).linkbutton({
+        $('#delFile' + num).linkbutton({
             iconCls: 'icon-reload'
         });
-        $('#delRow'+num).linkbutton({
+        $('#delRow' + num).linkbutton({
             iconCls: 'icon-remove'
         });
     }
+
     function delFile(id) {
-        $('#'+id).filebox('clear');
+        $('#' + id).filebox('clear');
     }
+
     $('#applyForm').form({
         url: '${ctx}/apply/add',
         onSubmit: function () {

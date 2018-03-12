@@ -16,7 +16,7 @@
     <style type="text/css">
         input {
             height: 25px;
-            width: 160px;
+            width: 100px;
             font-size: 15px;
             margin-left: 15px;
             background-color: #f2f2f2;
@@ -42,6 +42,10 @@
         <table width="100%" id="dtList" toolbar="#tb"></table>
         <div id="tb" style="margin:5px;height:auto">
             <div style="margin-bottom: 5px">
+                <span>患者姓名:</span>
+                <input class="easyui-textbox" id="patientName">
+                <span>就诊号:</span>
+                <input class="easyui-textbox" id="medicalRecordNo">
                 <span>申请单状态：</span>
                 <select editable="false" style="width: 120px" class="easyui-combobox" id="state">
                     <option value="">全部</option>
@@ -61,31 +65,7 @@
             </div>
         </div>
     </div>
-    <div id="win" class="easyui-window userInfo" closed="true" title="追加材料"
-         style="display:none;width:500px;height:200px;">
-        <form method="post" id="fileForm" enctype="multipart/form-data">
-            <input type="hidden" name="applyId" id="applyId"/>
-            <input type="hidden" name="medicalRecordNo" id="medicalRecordNo"/>
-            <table class="row" id="fileTable" style="margin-top: 10px;margin-left: 15px">
-                <tbody>
-                <tr id="tr0">
-                    <td>
-                        <input id="file0" style="height:30px;width: 260px;" name="file0">
-                    </td>
-                    <td>
-                        <a style="margin-left: 15px" class="easyui-linkbutton" data-options="iconCls:'icon-add'"
-                           href="javascript:void(0);" onclick="addRow()">新增</a>
-                    </td>
-                    <td>
-                        <a style="margin-left: 10px" class="easyui-linkbutton" data-options="iconCls:'icon-reload'"
-                           href="javascript:void(0);" onclick="delFile('file0')">清空</a>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
-            <input type="submit" style="margin-top:60px;width: auto;height: auto" class="row btn btn-primary" value="提交"/>
-        </form>
-    </div>
+
     <div id="Dialog" closed="true" class="easyui-dialog" style="display:none;padding:5px;width:300px;height:150px;"
          title="提示" data-options="iconCls:'icon-ok'" buttons="#dlg-buttons">
         <span id="prompt" style="font-size: 15px;color: #1a69a4"></span>
@@ -104,79 +84,6 @@
 <script type="text/javascript">
     var end_date;
     var start_date;
-
-    var num = 0;
-
-    $('#fileForm').form({
-        url: '${ctx}/apply/addFiles',
-        onSubmit: function () {
-            var row = $('#dtList').datagrid('getSelected');
-            var selectedId = row.id;
-            var selectedMedicalNo = row.medicalRecordNo;
-            $("#applyId").val(selectedId);
-            $("#medicalRecordNo").val(selectedMedicalNo);
-            return $(this).form('validate');
-        },
-        success: function (data) {
-            $("#prompt").text(data);
-            $("#Dialog").window('open');
-        }
-    });
-
-    function closeDialogAndWin() {
-        $("#Dialog").window('close');
-        $("#win").window('close');
-    }
-    $(function () {
-        $('#file0').filebox({
-            required: true,
-            buttonText: '选择文件',
-            prompt: '选择文件',
-            buttonAlign: 'right'
-        })
-
-    })
-
-    function delRow(id) {
-        $("#" + id).remove();
-        num--;
-    }
-
-    function addRow() {
-        num++;
-        var tbody = $("#fileTable tbody");
-        var newTr = '<tr id="tr' + num + '">' +
-            '                            <td>' +
-            '                                <input id="file' + num + '" style="height:30px;width: 260px;" name="file' + num + '">' +
-            '                            </td>' +
-            '                            <td>' +
-            '                                <a id="delFile' + num + '" style="margin-left: 10px" href="javascript:void(0);" onclick="delFile(\'file' + num + '\')">清空</a>' +
-            '                            </td>' +
-            '                            <td>' +
-            '                                <a id="delRow' + num + '" style="margin-left: 10px" href="javascript:void(0);" onclick="delRow(\'tr' + num + '\')">删除</a>' +
-            '                            </td>' +
-            '                        </tr>';
-        tbody.append(newTr);
-        $('#file' + num).filebox({
-            required: true,
-            buttonText: '选择文件',
-            prompt: '选择文件',
-            buttonAlign: 'right'
-        })
-        $('#addRow' + num).linkbutton({
-            iconCls: 'icon-add'
-        });
-        $('#delFile' + num).linkbutton({
-            iconCls: 'icon-reload'
-        });
-        $('#delRow' + num).linkbutton({
-            iconCls: 'icon-remove'
-        });
-    }
-
-    function delFile(id) {
-        $('#' + id).filebox('clear');
-    }
 
     $("#search").click(function () {
         if (end_date < start_date) {
@@ -230,7 +137,7 @@
         }
     });
     $('#dtList').datagrid({
-        url: '${ctx}/apply/getSelfList',
+        url: '${ctx}/apply/getApplyList',
         idField: 'id',
         title: '',
         fit: true,
@@ -242,6 +149,12 @@
         fitColumns: true,
         nowrap: true,
         queryParams: {
+            patientName: function () {
+                return $("#patientName").val()
+            },
+            medicalRecordNo: function () {
+                return $("#medicalRecordNo").val()
+            },
             state: function () {
                 return $("#state").val()
             },
@@ -265,6 +178,11 @@
                     title: 'id',
                     width: 20,
                     checkbox: true
+                },
+                {
+                    field: 'username',
+                    title: '患者姓名',
+                    width: 80
                 },
                 {
                     field: 'medicalRecordNo',
@@ -304,7 +222,7 @@
                     width: 120,
                     formatter: function (value, row, index) {
                         var res;
-                        if (row.state == 0 || row.state == 1) {
+                        if (row.state == 0) {
                             res = '等待安排'
                         } else {
                             res = value;
@@ -317,23 +235,23 @@
                     title: '操作',
                     width: 120,
                     formatter: function (value, row, index) {
-                        return "<a class='editcls' class='easyui-linkbutton' onclick='addFile()'></a>"
+                        return "<a class='editcls' class='easyui-linkbutton' onclick=\"showApply('" + row.username + "'," + row.id + ")\"></a>"
                     }
                 }
             ]
         ],
         onLoadSuccess: function (data) {
-            $("td").each(function(){
-                $(this).attr("title",$(this).text());
+            $("td").each(function () {
+                $(this).attr("title", $(this).text());
             });
-            $('.editcls').linkbutton({text: '追加材料', plain: true, iconCls: 'icon-add'});
+            $('.editcls').linkbutton({text: '查看', plain: true, iconCls: 'icon-dakai'});
             $("#dtList").datagrid("clearSelections");
             $('#dtList').datagrid('fixRowHeight');
         }
     })
 
-    function addFile() {
-        $("#win").window('open');
+    function showApply(username, applyId) {
+        parent.Open(applyId + "号申请_" +　username, '/apply/showApply/' + applyId);
     }
 
     $.extend($.fn.validatebox.defaults.rules, {

@@ -6,13 +6,10 @@ import com.study.cancer.dao.ApplyMapper;
 import com.study.cancer.model.Apply;
 import com.study.cancer.model.ApplyListVo;
 import com.study.cancer.model.CommonResult;
-import com.study.cancer.model.MedicalRecord;
 import com.study.cancer.service.ApplyService;
-import com.study.cancer.service.MedicalRecordService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -57,5 +54,34 @@ public class ApplyServiceImpl implements ApplyService {
         map.put("state", state);
         List<ApplyListVo> applyList = applyMapper.selectList(map);
         return new PageInfo(applyList);
+    }
+
+    @Override
+    public PageInfo getList(int page, int rows, Integer patientId, String applyStartDate, String applyEndDate, String state, String patientName, Integer medicalRecordNo) {
+        PageHelper.startPage(page, rows);
+        HashMap<Object, Object> map = new HashMap<>();
+        map.put("medicalRecordNo", medicalRecordNo);
+        map.put("username", patientName);
+        map.put("patientId", patientId);
+        map.put("applyStartDate", applyStartDate);
+        map.put("applyEndDate", applyEndDate);
+        map.put("state", state);
+        List<ApplyListVo> applyList = applyMapper.selectList(map);
+        return new PageInfo(applyList);
+    }
+
+    @Override
+    public CommonResult getApplyById(Integer applyId) {
+        HashMap<Object, Object> map = new HashMap<>();
+        CommonResult<Object> result = new CommonResult<>();
+        map.put("applyId", applyId);
+        List<ApplyListVo> applyListVos = applyMapper.selectList(map);
+        if (applyListVos != null && applyListVos.size() > 0) {
+            result.setData(applyListVos.get(0));
+            result.setSuccess(true);
+        } else {
+            result.setMessage("申请表获取失败");
+        }
+        return result;
     }
 }

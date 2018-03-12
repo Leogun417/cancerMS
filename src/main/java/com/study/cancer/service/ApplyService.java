@@ -12,4 +12,8 @@ public interface ApplyService {
     CommonResult addApply(Apply apply);
 
     PageInfo getSelfList(int page, int rows, Integer patientId, String applyStartDate, String applyEndDate, String state);
+
+    PageInfo getList(int page, int rows, Integer patientId, String applyStartDate, String applyEndDate, String state, String patientName, Integer medicalRecordNo);
+
+    CommonResult getApplyById(Integer applyId);
 }

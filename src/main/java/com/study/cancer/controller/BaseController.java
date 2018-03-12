@@ -26,11 +26,9 @@ import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.swing.text.html.FormSubmitEvent;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.util.*;
 
 @Controller
@@ -334,5 +332,54 @@ public class BaseController {
             prop.load(stream);
             return prop;
         }
+    }
+
+    /**
+     * 文件下载
+     * @Description:
+     * @param fileName
+     * @param request
+     * @param response
+     * @return
+     */
+    @ResponseBody
+    @RequestMapping("/download")
+    public void download(String fileName, String medicalRecordNo, HttpServletRequest request,
+                         HttpServletResponse response) throws IOException {
+
+        // 从配置文件中获取上传地址
+        Properties properties = loadFromFile("upload.properties");
+        String path = properties.getProperty("uploadUrl");
+
+        // 处理下载文件时中文名称乱码
+        File file = new File(path + File.separator + medicalRecordNo + File.separator + fileName);
+        response.reset();
+        response.setHeader("Content-Disposition",
+                "attachment; filename=\"" + new String(fileName.getBytes("gbk"), "iso-8859-1") + "\"");
+        response.addHeader("Content-Length", "" + file.length());
+        response.setContentType("application/octet-stream;charset=UTF-8");
+
+        try {
+            InputStream inputStream = new FileInputStream(
+                    new File(path + File.separator + medicalRecordNo + File.separator + fileName));
+
+            OutputStream os = response.getOutputStream();
+            byte[] b = new byte[2048];
+            int length;
+            while ((length = inputStream.read(b)) > 0) {
+                os.write(b, 0, length);
+            }
+
+            // 这里主要关闭。
+            os.close();
+
+            inputStream.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        // 返回值要注意，要不然就出现下面这句错误！
+        // java+getOutputStream() has already been called for this response
     }
 }
