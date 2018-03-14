@@ -227,8 +227,9 @@
                            style="margin-left: 45%;" value="提交"/>
                 </c:if>
                 <c:if test="${empty edit}">
-                    <button type="button" class="btn btn-primary"
-                            style="margin-left: 45%;">要求追加材料</button>
+                    <button onclick="sendMsgForFile()" type="button" class="btn btn-primary"
+                            style="margin-left: 45%;">要求追加材料
+                    </button>
                 </c:if>
             </div>
 
@@ -261,6 +262,26 @@
         parent.Open("用户信息", '/userInfo');
     }
 
+    function sendMsgForFile() {
+        $.messager.prompt('提示', '请输入需要病人追加的材料', function (val) {
+            if (val) {
+                $.ajax({
+                    type: 'POST',
+                    url: "${ctx}/apply/sendForFile",
+                    dataType: "text",
+                    data: {
+                        "patientId": ${applyInfo.patientId},
+                        "msg": val
+                    },
+                    async: true,
+                    success: function (data) {
+
+                    }
+                });
+            }
+        });
+    }
+
     $('#dtList').datagrid({
         url: '${ctx}/apply/getAttachments',
         idField: 'id',
@@ -271,13 +292,13 @@
         rownumbers: true,
         singleSelect: true,
         pagination: true,
-        pageSize:5,
+        pageSize: 5,
         pageList: [5, 10, 15],
         fitColumns: true,
         nowrap: true,
         queryParams: {
             applyId: function () {
-                return ${applyInfo.id}
+                return ${applyInfo.id};
             }
         },
         loadFilter: function (data) {
@@ -317,7 +338,7 @@
     })
 
     function downFile(attachmentName, medicalRecordNo) {
-        window.location.href="${ctx}/download?fileName="+attachmentName+"&medicalRecordNo="+medicalRecordNo;
+        window.location.href = "${ctx}/download?fileName=" + attachmentName + "&medicalRecordNo=" + medicalRecordNo;
     }
 
     $(function () {

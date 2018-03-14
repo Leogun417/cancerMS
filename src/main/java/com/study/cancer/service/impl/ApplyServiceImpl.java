@@ -3,9 +3,11 @@ package com.study.cancer.service.impl;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.study.cancer.dao.ApplyMapper;
+import com.study.cancer.dao.TreatmentProcessMapper;
 import com.study.cancer.model.Apply;
 import com.study.cancer.model.ApplyListVo;
 import com.study.cancer.model.CommonResult;
+import com.study.cancer.model.TreatmentProcess;
 import com.study.cancer.service.ApplyService;
 import org.springframework.stereotype.Service;
 
@@ -19,9 +21,13 @@ public class ApplyServiceImpl implements ApplyService {
     @Resource
     ApplyMapper applyMapper;
 
+    @Resource
+    TreatmentProcessMapper treatmentProcessMapper;
+
     @Override
     public CommonResult addApply(Apply apply) {
         CommonResult<Object> result = new CommonResult<>();
+        HashMap<Object, Object> resulDatatMap = new HashMap<>();
         List<Apply> oldApplys = applyMapper.selectByPatientId(apply.getPatientId());
         if (oldApplys != null && oldApplys.size() > 0) {//0正在排队 1排队完成 2入院 3爽约
             for (Apply oldApply : oldApplys) {
@@ -34,8 +40,19 @@ public class ApplyServiceImpl implements ApplyService {
         } else {
             int insert = applyMapper.insertSelective(apply);
             if (insert > 0) {
+                TreatmentProcess treatmentProcess = new TreatmentProcess();
+                treatmentProcess.setCreateDate(apply.getApplyDate());
+                treatmentProcess.setMedicalRecordNo(apply.getMedicalRecordNo()+"");
+                treatmentProcess.setPatientAction("提出入院申请");
+                int insertTreatmentProcess = treatmentProcessMapper.insertSelective(treatmentProcess);
                 result.setSuccess(true);
-                result.setData(apply.getId());
+                resulDatatMap.put("applyId", apply.getId());
+                if (insertTreatmentProcess <= 0) {
+                    result.setMessage("申请提交成功,但未成功建立过程");
+                    return result;
+                }
+                resulDatatMap.put("treatmentProcessId", treatmentProcess.getId());
+                result.setData(resulDatatMap);
                 result.setMessage("申请提交成功");
             } else {
                 result.setMessage("申请提交失败");

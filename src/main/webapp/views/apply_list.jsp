@@ -86,13 +86,6 @@
             <input type="submit" style="margin-top:60px;width: auto;height: auto" class="row btn btn-primary" value="提交"/>
         </form>
     </div>
-    <div id="Dialog" closed="true" class="easyui-dialog" style="display:none;padding:5px;width:300px;height:150px;"
-         title="提示" data-options="iconCls:'icon-ok'" buttons="#dlg-buttons">
-        <span id="prompt" style="font-size: 15px;color: #1a69a4"></span>
-    </div>
-    <div id="dlg-buttons">
-        <a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-ok'" onclick="closeDialogAndWin()">确定</a>
-    </div>
 </div>
 <script src="${ctxStatic}/js/jquery/jQuery-2.2.0.min.js"
         type="text/javascript" charset="UTF-8"></script>
@@ -118,15 +111,13 @@
             return $(this).form('validate');
         },
         success: function (data) {
-            $("#prompt").text(data);
-            $("#Dialog").window('open');
+            $.messager.confirm('提示', data, function () {
+                $("#win").window('close');
+            });
         }
     });
 
-    function closeDialogAndWin() {
-        $("#Dialog").window('close');
-        $("#win").window('close');
-    }
+
     $(function () {
         $('#file0').filebox({
             required: true,

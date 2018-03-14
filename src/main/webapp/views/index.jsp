@@ -27,8 +27,25 @@
         }
     </style>
 </head>
+
 <body class="easyui-layout">
 <div region="north" class="north" border="false" style="background-color: #339999">
+    <%--右下角消息--%>
+    <div id="rbmsg"
+         style="background:white;position:fixed;right:10px;bottom:10px;width:320px;display:none;border:2px solid #339999;">
+        <!-- 声音提示 -->
+        <audio id='msgnotify' autoplay="autoplay"></audio>
+        <div style="background:#339999;padding:5px 10px 5px 10px;color:white">
+            <span id='msgtitile' style="line-height:25px">消息提示</span><button onclick="$('#rbmsg').slideUp()"
+                                                                        style="float:right;">&times;</button>
+        </div>
+        <div style="min-height:60px;padding:20px 20px 10px 20px">
+            <span id="msgcontent" style="width:100%;white-space:pre-wrap;word-wrap:break-word;font-size: 15px;color: #339999"></span>
+        </div>
+        <div style="border-top: 1px solid LightGrey;margin:20px 20px 0px 20px;padding:8px 0 8px 0">
+            <button id='msgyes' style="font-size:15px;background-color:rgba(0,128,12,0.7);color:#ffffff">确定</button>
+        </div>
+    </div>
     <div style="margin-top: 20px;margin-left:10px;margin-right: 50px">
         <h1 style="display: inline;font-size: 26px;color: white">肿瘤患者化疗管理系统</h1>
         <div class="pf-user-photo" style="float: right" onMouseOver="show();" onMouseOut="hide()">
@@ -77,6 +94,30 @@
 <script src="${ctxStatic}/js/easyui/easyui-lang-zh_CN.js"
         type="text/javascript" charset="UTF-8"></script>
 <script>
+    var websocket = null;
+    var heartCheck = {
+        timeout: 80000,//80s
+        timeoutObj: null,
+        reset: function () {
+            clearTimeout(this.timeoutObj);
+            this.start();
+        },
+        start: function () {
+            this.timeoutObj = setTimeout(function () {
+                websocket.send("heartbeat");
+            }, this.timeout)
+        }
+    }
+
+    function showMsg(data) {
+        var dataObj = eval("("+data+")");
+        $("#msgyes").click(function () {
+            $("#rbmsg").slideUp();
+            Open(dataObj.tabTitle, dataObj.url);
+        })
+        $("#msgcontent").text(dataObj.content);
+        $("#rbmsg").slideDown();
+    }
     function show(id) {
         $("#userPhoto").hide();
         $("#userInfo").css("display", "inline");
@@ -88,11 +129,12 @@
     }
 
     function logout() {
-        window.location.href="${ctx}/logout";
+        window.location.href = "${ctx}/logout";
     }
 
     // 在右边center区域打开菜单，新增tab
     function Open(text, url) {
+
         if ($("#tabs").tabs('exists', text)) {
             $('#tabs').tabs('select', text);
         } else {
@@ -103,7 +145,10 @@
             });
         }
     }
+
     $(function () {
+        //websocket链接
+        websocket = connectWebSocket();
         // 实例化树形菜单
         $("#tree").tree({
             url: '${ctx}/getMenu',
@@ -125,9 +170,6 @@
                 return '<span  style="font-size:large;color: white">' + node.text + '</span>';
             }
         });
-
-
-
 
 
         // 绑定tabs的右键菜单
@@ -176,6 +218,57 @@
         }
     })
 
+    function connectWebSocket() {
+
+        //判断当前浏览器是否支持WebSocket
+        if ('WebSocket' in window) {
+            if (location.protocol == "https:") {
+                websocket = new WebSocket("wss://" + location.host + "${ctx}/webSocketServer");
+            } else {
+                websocket = new WebSocket("ws://" + location.host + "${ctx}/webSocketServer");
+            }
+
+        } else {
+            $.messager.confirm('提示', "您的浏览器不支持websocket!将无法收到消息通知！请更换新版本浏览器");
+            websocket = new SockJS("http://" + location.host + "${ctx}/sockjs/webSocketServer");
+        }
+        websocket.onerror = function () {
+            $.messager.confirm('提示', "websocket未能连接！请检查网络连接并刷新重试！若问题无法解决，请联系管理员");
+        };
+        websocket.onopen = function () {
+            heartCheck.start();//开始心跳监测
+            console.log("websocket connected!")
+            websocket.onclose = function () {
+                console.log("onclose");
+                $.messager.confirm('提示', 'websocket连接被关闭，请检查网络或者是否从其他地方登陆。注意，点击确定后会重连', function (index) {
+                    connectWebSocket();
+                    layer.close(index);
+                });
+            };
+            websocket.onerror = function () {
+                console.log("onerror");
+                $.messager.confirm('提示', 'websocket遇到错误，连接中断。点击确定后会重连', function (index) {
+                    connectWebSocket();
+                    layer.close(index);
+                });
+
+            };
+            //接收到消息的回调方法
+            websocket.onmessage = function (event) {
+                //收到心跳消息重置心跳检测
+                if (event.data == 'heartbeat') {
+                    console.log("heartbeat");
+                    heartCheck.reset();
+                    return;
+                }
+                showMsg(event.data);
+            }
+
+
+        }
+
+        return websocket;
+    }
 </script>
 </html>
 

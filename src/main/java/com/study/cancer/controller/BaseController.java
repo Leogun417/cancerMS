@@ -257,7 +257,7 @@ public class BaseController {
      * @throws IllegalStateException
      * @throws IOException
      */
-    public CommonResult uploadMore(HttpServletRequest request, Integer recordNo, Integer applyNo)
+    public CommonResult uploadMore(HttpServletRequest request, Integer recordNo, Integer applyNo, String treatmentProcessId)
             throws IllegalStateException, IOException {//此时的request为DefautMultipartHttpServletRequest而不是单纯的HttpServletRequest，否则无法转化为MultipartHttpServletRequest
         CommonResult result = null;
         // 从配置文件中获取上传地址
@@ -302,6 +302,7 @@ public class BaseController {
                         attachment.setAttachmentName(fileName);
                         attachment.setAttachmentPath(path + File.separator + recordNo + File.separator);
                         attachment.setMedicalRecordNo(recordNo + "");
+                        attachment.setTreatmentProcessId(treatmentProcessId);
                         if (!"".equals(applyNo)) {
                             attachment.setApplyId(applyNo + "");
                             attachment.setType("apply");

@@ -3,6 +3,7 @@ package com.study.cancer.interceptor;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.socket.server.support.WebSocketHttpRequestHandler;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -30,7 +31,9 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
 	@Override
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object arg2) throws Exception {
 		HttpSession session = request.getSession();
-		String name = ((HandlerMethod) arg2).getMethod().getName();
+		if (!(arg2 instanceof WebSocketHttpRequestHandler)) {
+			String name = ((HandlerMethod) arg2).getMethod().getName();
+		}
 		if (request.getRequestURI().endsWith("/checkValidateCode") || request.getRequestURI().endsWith("/sendSMS") || request.getRequestURI().endsWith("/checkPhone") || request.getRequestURI().endsWith("/assign") || request.getRequestURI().endsWith("/register") || request.getRequestURI().endsWith("/login") || request.getRequestURI().endsWith("/loginPage") || request.getRequestURI().endsWith("/registerPage")) {
 			return true;
 		}
