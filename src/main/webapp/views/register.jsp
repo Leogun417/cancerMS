@@ -35,7 +35,7 @@
             background-color: #f2f2f2;
         }
 
-       .cancer-group select {
+        .cancer-group select {
             height: 25px;
             width: 60px;
             margin-left: 15px;
@@ -104,7 +104,8 @@
                             <input style="border: solid 1px black" class="easyui-validatebox" required="true"
                                    data-options="validType:'isPhoneExist'" type="text" class="" name="phoneNumber"
                                    id="phoneNumber"/>
-                            <button type="button" id="send" class="btn btn-success" onclick="sendSMS()"><span id="sendText">发送动态码</span></button>
+                            <button type="button" id="send" class="btn btn-success" onclick="sendSMS()"><span
+                                    id="sendText">发送动态码</span></button>
                         </div>
                     </div>
                     <div class="cancer-group row">
@@ -134,6 +135,7 @@
 <script src="${ctxStatic}/js/idCardNoValidation.js"></script>
 <script type="text/javascript">
     var time = 60;
+
     function sendSMS() {
         var rules = $.fn.validatebox.defaults.rules;
         if ($("#phoneNumber").val().trim() == "") {
@@ -143,31 +145,35 @@
         if (!rules.isMobile.validator($("#phoneNumber").val())) {
             return;
         }
-        $("#sendText").text("请等待"+time+"s");
-        $("#send").attr("disabled",true);
+        $("#sendText").text("请等待" + time + "s");
+        $("#send").attr("disabled", true);
         var fn = function () {
             if (time == 0) {
-                $("#send").attr("disabled",false);
+                $("#send").attr("disabled", false);
                 $("#sendText").text("重新发送");
                 time = 60;
                 clearInterval(timer);
                 return;
             }
             time--;
-            $("#sendText").text("请等待"+time+"s");
+            $("#sendText").text("请等待" + time + "s");
         }
         timer = setInterval(fn, 1000);
         $.ajax({
             type: 'POST',
-            url: "${ctx}/sendSMS",
+            url: "${ctx}/sendValidateCode",
             dataType: "text",
-            data: {"phoneNumber": $("#phoneNumber").val()},
+            data: {
+                "phoneNumber": $("#phoneNumber").val(),
+                "isRegister": "1"
+            },
             async: true,
             success: function (data) {
-
+                alert(data);
             }
         });
     }
+
     $('#regForm').form({
         url: '${ctx}/register',
         onSubmit: function () {
@@ -179,10 +185,12 @@
             parent.$('#registerDialog').dialog('open');
         }
     });
+
     function registerEnd() {
         parent.$('#registerDialog').dialog('close');
         parent.closeRegWin();
     }
+
     $.extend($.fn.validatebox.defaults.rules, {
         equals: {
             validator: function (value, param) {

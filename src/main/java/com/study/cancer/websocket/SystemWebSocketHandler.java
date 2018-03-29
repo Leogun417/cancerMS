@@ -14,7 +14,6 @@ import java.util.concurrent.ConcurrentMap;
 
 /**
  * websocket处理的类，包括发送消息、获取用户在线等功能
- * @author boco-wingo1
  *
  */
 @Component("webSockertHandle")

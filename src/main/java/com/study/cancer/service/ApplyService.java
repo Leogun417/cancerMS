@@ -16,4 +16,6 @@ public interface ApplyService {
     PageInfo getList(int page, int rows, Integer patientId, String applyStartDate, String applyEndDate, String state, String patientName, Integer medicalRecordNo);
 
     CommonResult getApplyById(Integer applyId);
+
+    CommonResult getUserByAuthorization(String authorization);
 }

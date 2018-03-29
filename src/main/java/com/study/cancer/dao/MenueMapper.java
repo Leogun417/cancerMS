@@ -54,4 +54,6 @@ public interface MenueMapper {
     int updateByPrimaryKey(Menue record);
 
     List<Menue> selectByAuthorityLevel(String authoritylevel);
+
+    List<Menue> selectAll();
 }

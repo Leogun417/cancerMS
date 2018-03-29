@@ -161,4 +161,10 @@
     from menue
     where authority_level = #{_parameter}
   </select>
+
+  <select id="selectAll" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from menue
+  </select>
 </mapper>

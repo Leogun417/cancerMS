@@ -1,6 +1,7 @@
 package com.study.cancer.controller;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.aliyuncs.DefaultAcsClient;
 import com.aliyuncs.IAcsClient;
 import com.aliyuncs.dysmsapi.model.v20170525.SendSmsRequest;
@@ -10,12 +11,12 @@ import com.aliyuncs.profile.DefaultProfile;
 import com.aliyuncs.profile.IClientProfile;
 import com.aliyuncs.http.MethodType;
 import com.study.cancer.dao.AttachmentMapper;
-import com.study.cancer.model.Attachment;
-import com.study.cancer.model.CommonResult;
-import com.study.cancer.model.Menue;
-import com.study.cancer.model.User;
+import com.study.cancer.model.*;
 import com.study.cancer.service.AttachmentService;
 import com.study.cancer.service.LoginService;
+import com.study.cancer.service.MessageService;
+import com.study.cancer.websocket.SystemWebSocketHandler;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,10 +24,12 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.multipart.commons.CommonsMultipartResolver;
+import org.springframework.web.socket.TextMessage;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import javax.swing.text.html.FormSubmitEvent;
 import java.io.*;
 import java.util.*;
@@ -35,17 +38,20 @@ import java.util.*;
 @RequestMapping(value = "/")
 public class BaseController {
     //初始化ascClient需要的几个参数
-    final String product = "Dysmsapi";//短信API产品名称（短信产品名固定，无需修改）
-    final String domain = "dysmsapi.aliyuncs.com";//短信API产品域名（接口地址固定，无需修改）
+    final static String product = "Dysmsapi";//短信API产品名称（短信产品名固定，无需修改）
+    final static String domain = "dysmsapi.aliyuncs.com";//短信API产品域名（接口地址固定，无需修改）
     //替换成你的AK
-    final String accessKeyId = "LTAIZUXHmIT8vzKn";//你的accessKeyId,参考本文档步骤2
-    final String accessKeySecret = "hiKX4QEx0OR9xnCcTtUqVGAsvYqC0M";//你的accessKeySecret，参考本文档步骤2
-    String code;//短信验证码
-    MyTimeTask myTimeTask = null;
+    final static String accessKeyId = "LTAIZUXHmIT8vzKn";//你的accessKeyId,参考本文档步骤2
+    final static String accessKeySecret = "hiKX4QEx0OR9xnCcTtUqVGAsvYqC0M";//你的accessKeySecret，参考本文档步骤2
     @Resource
     HttpServletRequest request;
     @Resource
     LoginService loginService;
+    @Resource
+    MessageService messageService;
+
+    @Resource
+    SystemWebSocketHandler systemWebSocketHandler;
 
     @RequestMapping("/loginPage")
     public String loginPage() {
@@ -59,6 +65,29 @@ public class BaseController {
         request.getSession(true).setAttribute("loginUser", (User) result.getData());
         result.setData("");
         return result;
+
+    }
+
+    public HttpSession getSession() {
+        return request.getSession(true);
+    }
+
+    public String sendMsg(Integer sendTo, String msg, String tabTitle, String url, String type) throws IOException {
+        Message message = new Message();
+        message.setContent(msg);
+        message.setTabTitle(tabTitle);
+        message.setUrl(url);
+        message.setType(type);//执行请求0或回执信息1
+        message.setSendTo(sendTo);
+        message.setSendFrom(((User) getSession().getAttribute("loginUser")).getId());
+        CommonResult result = messageService.addMessage(message);
+        if (result.isSuccess()) {
+            String jsonMessage = JSONObject.toJSON(message).toString();
+            systemWebSocketHandler.sendMessageToUser(sendTo + "", new TextMessage(jsonMessage));
+            return "success";
+        } else {
+            return "fail";
+        }
 
     }
 
@@ -79,15 +108,15 @@ public class BaseController {
         MyTimeTask(String validateCode) {
             this.validateCode = validateCode;
         }
+
         @Override
         public void run() {
-            validateCode  = null;
+            validateCode = null;
         }
     }
 
-    @RequestMapping("/sendSMS")
-    @ResponseBody
-    public String sendSMS(String phoneNumber) throws ClientException {
+
+    public String sendSMS(String phoneNumber, Map map, String type) throws ClientException {
         //初始化ascClient,暂时不支持多region（请勿修改）
         IClientProfile profile = DefaultProfile.getProfile("cn-hangzhou", accessKeyId,
                 accessKeySecret);
@@ -101,16 +130,34 @@ public class BaseController {
         request.setPhoneNumbers(phoneNumber);
         //必填:短信签名-可在短信控制台中找到
         request.setSignName("肿瘤患者化疗管理系统");
-        //必填:短信模板-可在短信控制台中找到
-        request.setTemplateCode("SMS_126361374");
+
         //可选:模板中的变量替换JSON串,如模板内容为"亲爱的${name},您的验证码为${code}"时,此处的值为
         //友情提示:如果JSON中需要带换行符,请参照标准的JSON协议对换行符的要求,比如短信内容中包含\r\n的情况在JSON中需要表示成\\r\\n,否则会导致JSON在服务端解析失败
-        code = String.valueOf(Math.random() * (9999 - 1000 + 1) + 1000).substring(0,4);
-        //设置定时器使code5分钟失效
-        Timer timer = new Timer();
-        myTimeTask = new MyTimeTask(code);
-        timer.schedule(myTimeTask, 5 * 60 * 1000);
-        request.setTemplateParam("{\"code\":" + code + "}");
+        if (type.equals(SMSConstant.APPLY_FOR_APPEN_TO_PATIENT)) {
+            //必填:短信模板-可在短信控制台中找到
+            request.setTemplateCode(SMSConstant.APPLY_FOR_APPEN_TO_PATIENT);
+            request.setTemplateParam("{\"doctorName\":" + map.get("doctorName") + "}");
+        } else if (type.equals(SMSConstant.APPLY_FOR_HEALTH_DATA_TO_PATIENT)) {
+            //必填:短信模板-可在短信控制台中找到
+            request.setTemplateCode(SMSConstant.APPLY_FOR_HEALTH_DATA_TO_PATIENT);
+            request.setTemplateParam("{\"doctorName\":" + map.get("doctorName") + "}");
+        } else if (type.equals(SMSConstant.MODIFY_CODE)) {
+            //必填:短信模板-可在短信控制台中找到
+            request.setTemplateCode(SMSConstant.MODIFY_CODE);
+            request.setTemplateParam("{\"code\":" + map.get("code") + "}");
+        } else if (type.equals(SMSConstant.NOTICE_PATIENT_TO_HOSPITAL)) {
+            //必填:短信模板-可在短信控制台中找到
+            request.setTemplateCode(SMSConstant.NOTICE_PATIENT_TO_HOSPITAL);
+            request.setTemplateParam("{\"groupId\":" + map.get("groupId") + ",\"date\":" + map.get("date") + "}");
+        } else if (type.equals(SMSConstant.RECEIPT_TO_PATIENT)) {
+            //必填:短信模板-可在短信控制台中找到
+            request.setTemplateCode(SMSConstant.RECEIPT_TO_PATIENT);
+            request.setTemplateParam("{\"doctorName\":" + map.get("doctorName") + "}");
+        } else if (type.equals(SMSConstant.REGISTER_CODE)) {
+            //必填:短信模板-可在短信控制台中找到
+            request.setTemplateCode(SMSConstant.REGISTER_CODE);
+            request.setTemplateParam("{\"code\":" + map.get("code") + "}");
+        }
         //请求失败这里会抛ClientException异常
         /*SendSmsResponse sendSmsResponse = acsClient.getAcsResponse(request);
         if (sendSmsResponse.getCode() != null && sendSmsResponse.getCode().equals("OK")) {
@@ -118,6 +165,25 @@ public class BaseController {
             return "success";
         }*/
         return "fail";
+    }
+
+    @RequestMapping("/sendValidateCode")
+    @ResponseBody
+    public String sendValidateCode(String phoneNumber, String isRegister) throws ClientException {
+        String code = String.valueOf(Math.random() * (9999 - 1000 + 1) + 1000).substring(0, 4);
+        //设置定时器使code5分钟失效
+        Timer timer = new Timer();
+        TimerTask myTimeTask = new MyTimeTask(code);
+        getSession().setAttribute("myTimeTask", myTimeTask);
+        getSession().setAttribute("generateCode", code);
+        timer.schedule(myTimeTask, 5 * 60 * 1000);
+        HashMap<Object, Object> map = new HashMap<>();
+        map.put("code", code);
+        if ("1".equals(isRegister)) {
+            return sendSMS(phoneNumber, map, SMSConstant.REGISTER_CODE);
+        } else {
+            return sendSMS(phoneNumber, map, SMSConstant.MODIFY_CODE);
+        }
     }
 
     @RequestMapping("/modifyUserInfo")
@@ -164,6 +230,8 @@ public class BaseController {
     @ResponseBody
     public String register(HttpServletRequest request, User user, String validateCode) {
         String athorizationLevel = (String) request.getSession(true).getAttribute("athorizationLevel");
+        MyTimeTask myTimeTask = (MyTimeTask) getSession().getAttribute("myTimeTask");
+        String code = myTimeTask.getValidateCode();
         user.setAthorization(athorizationLevel);
         if (!code.equals(validateCode)) {
             return "验证码输入错误";
@@ -196,6 +264,7 @@ public class BaseController {
     @RequestMapping("/checkValidateCode")
     @ResponseBody
     public boolean checkValidateCode(String validateCode) {
+        MyTimeTask myTimeTask = (MyTimeTask) getSession().getAttribute("myTimeTask");
         if ("".equals(myTimeTask.getValidateCode()) || myTimeTask.getValidateCode() == null) {
             return false;
         } else {
@@ -337,11 +406,12 @@ public class BaseController {
 
     /**
      * 文件下载
-     * @Description:
+     *
      * @param fileName
      * @param request
      * @param response
      * @return
+     * @Description:
      */
     @ResponseBody
     @RequestMapping("/download")

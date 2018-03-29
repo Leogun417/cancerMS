@@ -3,11 +3,10 @@ package com.study.cancer.service.impl;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.study.cancer.dao.ApplyMapper;
+import com.study.cancer.dao.MenueMapper;
 import com.study.cancer.dao.TreatmentProcessMapper;
-import com.study.cancer.model.Apply;
-import com.study.cancer.model.ApplyListVo;
-import com.study.cancer.model.CommonResult;
-import com.study.cancer.model.TreatmentProcess;
+import com.study.cancer.dao.UserMapper;
+import com.study.cancer.model.*;
 import com.study.cancer.service.ApplyService;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +22,9 @@ public class ApplyServiceImpl implements ApplyService {
 
     @Resource
     TreatmentProcessMapper treatmentProcessMapper;
+
+    @Resource
+    UserMapper userMapper;
 
     @Override
     public CommonResult addApply(Apply apply) {
@@ -98,6 +100,19 @@ public class ApplyServiceImpl implements ApplyService {
             result.setSuccess(true);
         } else {
             result.setMessage("申请表获取失败");
+        }
+        return result;
+    }
+
+    @Override
+    public CommonResult getUserByAuthorization(String authorization) {
+        CommonResult<Object> result = new CommonResult<>();
+        List<User> users = userMapper.selectByAthorization(authorization);
+        if (users != null && users.size() > 0) {
+            result.setSuccess(true);
+            result.setData(users);
+        } else {
+            result.setMessage("获取该相应权限的用户失败");
         }
         return result;
     }

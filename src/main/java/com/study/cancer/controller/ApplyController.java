@@ -1,25 +1,23 @@
 package com.study.cancer.controller;
 
-import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
 import com.study.cancer.model.*;
 import com.study.cancer.service.ApplyService;
 import com.study.cancer.service.AttachmentService;
 import com.study.cancer.service.MedicalRecordService;
 import com.study.cancer.service.TreatmentProcessService;
-import com.study.cancer.websocket.SystemWebSocketHandler;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.socket.TextMessage;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 @Controller
@@ -36,9 +34,6 @@ public class ApplyController extends BaseController {
 
     @Resource
     TreatmentProcessService treatmentProcessService;
-
-    @Resource
-    SystemWebSocketHandler systemWebSocketHandler;
 
     @RequestMapping("/fillIn")
     public String fillIn(Model model) {
@@ -115,6 +110,13 @@ public class ApplyController extends BaseController {
         if (processResult.isSuccess()) {
             TreatmentProcess process = (TreatmentProcess) processResult.getData();
             CommonResult result = uploadMore(request, medicalRecordNo, applyId, process.getId() + "");
+            CommonResult userByAuthorization = applyService.getUserByAuthorization("3");
+            if (userByAuthorization.isSuccess()) {
+                List<User> users = (List<User>) userByAuthorization.getData();
+                for (User user : users) {
+                    sendMsg(user.getId(), "材料已追加", TabData.SHOW_APPLY_LIST, TabData.tabMap.get(TabData.SHOW_APPLY_LIST), "1");
+                }
+            }
             return result.getMessage();
         } else {
             return processResult.getMessage();
@@ -125,12 +127,7 @@ public class ApplyController extends BaseController {
     @RequestMapping(value = "/sendForFile", method = RequestMethod.POST)
     @ResponseBody
     public String sendForFile(Integer patientId, String msg) throws IOException {
-        WebsocketMessageBean websocketMessageBean = new WebsocketMessageBean();
-        websocketMessageBean.setContent("请追加以下材料："+msg);
-        websocketMessageBean.setTabTitle("查看申请");
-        websocketMessageBean.setUrl("/apply/myApplyList");
-        String message = JSONObject.toJSON(websocketMessageBean).toString();
-        systemWebSocketHandler.sendMessageToUser(patientId+"", new TextMessage(message));
+        sendMsg(patientId, "请追加以下材料：" + msg, TabData.SHOW_APPLY_LIST_FOR_SELF, TabData.tabMap.get(TabData.SHOW_APPLY_LIST_FOR_SELF), "0");
         return "success";
     }
 

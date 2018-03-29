@@ -72,7 +72,8 @@
                                 <input class="easyui-textbox" required="true"
                                        data-options="validType:'isMobile'" type="text" name="phoneNumber"
                                        id="phoneNumber" value="${loginUser.phoneNumber}"/>
-                                <button type="button" id="send" class="btn btn-success" onclick="sendSMS()"><span id="sendText">发送动态码</span></button>
+                                <button type="button" id="send" class="btn btn-success" onclick="sendSMS()"><span
+                                        id="sendText">发送动态码</span></button>
                             </div>
                         </div>
 
@@ -119,7 +120,8 @@
             </div>
 
         </form>
-        <div id="win" class="easyui-window userInfo" closed="true" title="修改密码" style="display:none;width:500px;height:200px;">
+        <div id="win" class="easyui-window userInfo" closed="true" title="修改密码"
+             style="display:none;width:500px;height:200px;">
             <form id="pwdForm" style="margin-top: 15px;margin-left: 10px">
                 <div class="cancer-group row">
                     <label class="pull-left label-lg"><span>*</span>新的密码:</label>
@@ -154,6 +156,7 @@
 <script src="${ctxStatic}/js/idCardNoValidation.js"></script>
 <script type="text/javascript">
     var time = 60;
+
     function sendSMS() {
         var rules = $.fn.validatebox.defaults.rules;
         if ($("#phoneNumber").val().trim() == "") {
@@ -163,25 +166,28 @@
         if (!rules.isMobile.validator($("#phoneNumber").val())) {
             return;
         }
-        $("#sendText").text("请等待"+time+"s");
-        $("#send").attr("disabled",true);
+        $("#sendText").text("请等待" + time + "s");
+        $("#send").attr("disabled", true);
         var fn = function () {
             if (time == 0) {
-                $("#send").attr("disabled",false);
+                $("#send").attr("disabled", false);
                 $("#sendText").text("重新发送");
                 time = 60;
                 clearInterval(timer);
                 return;
             }
             time--;
-            $("#sendText").text("请等待"+time+"s");
+            $("#sendText").text("请等待" + time + "s");
         }
         timer = setInterval(fn, 1000);
         $.ajax({
             type: 'POST',
-            url: "${ctx}/sendSMS",
+            url: "${ctx}/sendValidateCode",
             dataType: "text",
-            data: {"phoneNumber": $("#phoneNumber").val()},
+            data: {
+                "phoneNumber": $("#phoneNumber").val(),
+                "isRegister": 0
+            },
             async: true,
             success: function (data) {
 

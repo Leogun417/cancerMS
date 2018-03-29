@@ -34,7 +34,7 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
 		if (!(arg2 instanceof WebSocketHttpRequestHandler)) {
 			String name = ((HandlerMethod) arg2).getMethod().getName();
 		}
-		if (request.getRequestURI().endsWith("/checkValidateCode") || request.getRequestURI().endsWith("/sendSMS") || request.getRequestURI().endsWith("/checkPhone") || request.getRequestURI().endsWith("/assign") || request.getRequestURI().endsWith("/register") || request.getRequestURI().endsWith("/login") || request.getRequestURI().endsWith("/loginPage") || request.getRequestURI().endsWith("/registerPage")) {
+		if (request.getRequestURI().endsWith("/checkValidateCode") || request.getRequestURI().endsWith("/sendValidateCode") || request.getRequestURI().endsWith("/checkPhone") || request.getRequestURI().endsWith("/assign") || request.getRequestURI().endsWith("/register") || request.getRequestURI().endsWith("/login") || request.getRequestURI().endsWith("/loginPage") || request.getRequestURI().endsWith("/registerPage")) {
 			return true;
 		}
 
