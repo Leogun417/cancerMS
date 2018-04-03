@@ -72,13 +72,16 @@ public class BaseController {
         return request.getSession(true);
     }
 
-    public String sendMsg(Integer sendTo, String msg, String tabTitle, String url, String type) throws IOException {
+    public String sendMsg(Integer sendTo, String msg, String tabTitle, String url, String type, String state) throws IOException {
         Message message = new Message();
         message.setContent(msg);
         message.setTabTitle(tabTitle);
+        message.setState(state);
         message.setUrl(url);
-        message.setType(type);//执行请求0或回执信息1
+        message.setMessageType(type);//执行请求0或回执信息1
         message.setSendTo(sendTo);
+        message.setSendDate(new Date());
+        message.setSendFromName(((User) getSession().getAttribute("loginUser")).getUsername());
         message.setSendFrom(((User) getSession().getAttribute("loginUser")).getId());
         CommonResult result = messageService.addMessage(message);
         if (result.isSuccess()) {

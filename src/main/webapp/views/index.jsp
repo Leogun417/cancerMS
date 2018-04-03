@@ -14,7 +14,7 @@
         }
 
         .north {
-            height: 80px;
+            height: 90px;
         }
 
         .north span {
@@ -36,11 +36,14 @@
         <!-- 声音提示 -->
         <audio id='msgnotify' autoplay="autoplay"></audio>
         <div style="background:#339999;padding:5px 10px 5px 10px;color:white">
-            <span id='msgtitile' style="line-height:25px">消息提示</span><button onclick="$('#rbmsg').slideUp()"
-                                                                        style="float:right;">&times;</button>
+            <span id='msgtitile' style="line-height:25px">消息提示</span>
+            <button onclick="$('#rbmsg').slideUp()"
+                    style="float:right;">&times;
+            </button>
         </div>
         <div style="min-height:60px;padding:20px 20px 10px 20px">
-            <span id="msgcontent" style="width:100%;white-space:pre-wrap;word-wrap:break-word;font-size: 15px;color: #339999"></span>
+            <span id="msgcontent"
+                  style="width:100%;white-space:pre-wrap;word-wrap:break-word;font-size: 15px;color: #339999"></span>
         </div>
         <div style="border-top: 1px solid LightGrey;margin:20px 20px 0px 20px;padding:8px 0 8px 0">
             <button id='msgyes' style="font-size:15px;background-color:rgba(0,128,12,0.7);color:#ffffff">确定</button>
@@ -48,11 +51,16 @@
     </div>
     <div style="margin-top: 20px;margin-left:10px;margin-right: 50px">
         <h1 style="display: inline;font-size: 26px;color: white">肿瘤患者化疗管理系统</h1>
-        <div class="pf-user-photo" style="float: right" onMouseOver="show();" onMouseOut="hide()">
+        <div style="float: right" onMouseOver="show();" onMouseOut="hide()">
             <div id="userInfo" style="display:none;">
                 <span>
                     <a href="javascript:void(0);" onclick="Open('用户信息','/userInfo');">
                         <span>用户信息</span>
+                    </a>
+                </span>
+                <span style="display: block">
+                    <a href="javascript:void(0);" onclick="Open('收件箱','/message/list');">
+                        <span>收件箱</span>
                     </a>
                 </span>
                 <span style="display: block">
@@ -110,14 +118,33 @@
     }
 
     function showMsg(data) {
-        var dataObj = eval("("+data+")");
+        if (typeof data == "string") {
+            var dataObj = eval("(" + data + ")");
+        } else {
+            var dataObj = data;
+        }
         $("#msgyes").click(function () {
             $("#rbmsg").slideUp();
+            if (dataObj != null) {
+                $.ajax({
+                    type: 'get',
+                    url: "${ctx}/message/changeState",
+                    dataType: "text",
+                    data: {
+                        "messageId": dataObj.id
+                    },
+                    async: true,
+                    success: function (d) {
+
+                    }
+                });
+            }
             Open(dataObj.tabTitle, dataObj.url);
         })
         $("#msgcontent").text(dataObj.content);
         $("#rbmsg").slideDown();
     }
+
     function show(id) {
         $("#userPhoto").hide();
         $("#userInfo").css("display", "inline");
@@ -147,6 +174,18 @@
     }
 
     $(function () {
+        $.ajax({
+            type: 'get',
+            url: "${ctx}/message/checkUnreadMsg",
+            dataType: "json",
+            async: true,
+            success: function (data) {
+                if (data) {
+                    var data = {"content": "有未读消息，请查看", "tabTitle": "收件箱", "url": "/message/list"};
+                    showMsg(data);
+                }
+            }
+        });
         //websocket链接
         websocket = connectWebSocket();
         // 实例化树形菜单

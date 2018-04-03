@@ -114,7 +114,7 @@ public class ApplyController extends BaseController {
             if (userByAuthorization.isSuccess()) {
                 List<User> users = (List<User>) userByAuthorization.getData();
                 for (User user : users) {
-                    sendMsg(user.getId(), "材料已追加", TabData.SHOW_APPLY_LIST, TabData.tabMap.get(TabData.SHOW_APPLY_LIST), "1");
+                    sendMsg(user.getId(), "就诊号为" + medicalRecordNo + "的申请，病人" + ((User) getSession().getAttribute("loginUser")).getUsername() + "的材料已追加", applyId + "号申请_" + ((User) getSession().getAttribute("loginUser")).getUsername(), "/apply/showApply/" + applyId, "1", "0");
                 }
             }
             return result.getMessage();
@@ -127,7 +127,7 @@ public class ApplyController extends BaseController {
     @RequestMapping(value = "/sendForFile", method = RequestMethod.POST)
     @ResponseBody
     public String sendForFile(Integer patientId, String msg) throws IOException {
-        sendMsg(patientId, "请追加以下材料：" + msg, TabData.SHOW_APPLY_LIST_FOR_SELF, TabData.tabMap.get(TabData.SHOW_APPLY_LIST_FOR_SELF), "0");
+        sendMsg(patientId, "请追加以下材料：" + msg, TabData.SHOW_APPLY_LIST_FOR_SELF, TabData.tabMap.get(TabData.SHOW_APPLY_LIST_FOR_SELF), "0", "0");
         return "success";
     }
 

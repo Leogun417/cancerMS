@@ -221,7 +221,7 @@
                 AND medical_record_no = #{medicalRecordNo,jdbcType=INTEGER}
             </if>
             <if test="username != null">
-                AND t2.username = #{username}
+                AND t2.username LIKE CONCAT('%', #{username}, '%')
             </if>
             <if test="patientId != null">
                 AND patient_id = #{patientId,jdbcType=INTEGER}
