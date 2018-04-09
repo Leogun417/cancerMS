@@ -138,10 +138,16 @@ public class ApplyServiceImpl implements ApplyService {
                     apply.setState("2");//排队完成
                     applyMapper.updateByPrimaryKeySelective(apply);
                 }
+                int count = 0;
                 for (Bed bed : unusedBeds) {
+                    if (count == applies.size()) {
+                        break;
+                    }
                     bed.setState("1");
                     bedMapper.updateByPrimaryKeySelective(bed);
+                    count++;
                 }
+
                 result.setSuccess(true);
                 result.setMessage("床位安排成功");
             } else {

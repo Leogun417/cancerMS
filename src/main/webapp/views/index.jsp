@@ -281,14 +281,14 @@
                 console.log("onclose");
                 $.messager.confirm('提示', 'websocket连接被关闭，请检查网络或者是否从其他地方登陆。注意，点击确定后会重连', function (index) {
                     connectWebSocket();
-                    layer.close(index);
+                    
                 });
             };
             websocket.onerror = function () {
                 console.log("onerror");
                 $.messager.confirm('提示', 'websocket遇到错误，连接中断。点击确定后会重连', function (index) {
                     connectWebSocket();
-                    layer.close(index);
+                    
                 });
 
             };
