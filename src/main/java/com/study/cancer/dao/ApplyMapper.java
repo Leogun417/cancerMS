@@ -5,6 +5,7 @@ import com.study.cancer.model.ApplyListVo;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public interface ApplyMapper {
     /**
@@ -57,5 +58,7 @@ public interface ApplyMapper {
 
     List<Apply> selectByPatientId(Integer patientId);
 
-    List<ApplyListVo> selectList(HashMap<Object, Object> map);
+    List<ApplyListVo> selectList(Map<Object, Object> map);
+
+    List<Apply> selectByLimitAndWaitLevel(Map map);
 }

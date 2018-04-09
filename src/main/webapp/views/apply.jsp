@@ -105,7 +105,7 @@
                     </div>
                     <div class="col-md-6 col-sm-6">
                         <div class="cancer-group row">
-                            <label for="" class="pull-left label-lg"><span>*</span>性　　别:</label>
+                            <label class="pull-left label-lg"><span>*</span>性　　别:</label>
                             <div>
                                 <c:if test="${not empty edit}">
                                     <select disabled class="easyui-validatebox" required="true" name="sex" id="sex">
@@ -134,7 +134,7 @@
                             </div>
                         </div>
                         <div class="cancer-group row">
-                            <label for="" class="pull-left label-lg"><span>*</span>证件号码:</label>
+                            <label class="pull-left label-lg"><span>*</span>证件号码:</label>
                             <div>
                                 <c:if test="${not empty edit}">
                                     <input readonly class="easyui-validatebox" required="true"
@@ -227,15 +227,40 @@
                            style="margin-left: 45%;" value="提交"/>
                 </c:if>
                 <c:if test="${empty edit}">
-                    <button onclick="sendMsgForFile()" type="button" class="btn btn-primary"
-                            style="margin-left: 45%;">要求追加材料
-                    </button>
+                    <c:if test="${applyInfo.state eq 0 or applyInfo.state eq 1}">
+                        <button onclick="sendMsgForFile()" type="button" class="btn btn-primary"
+                                style="margin-left: 40%;">要求追加材料
+                        </button>
+                        <button onclick="openJuge()" type="button" class="btn btn-primary"
+                                style="margin-left: 15px;">危重度评定
+                        </button>
+                    </c:if>
                 </c:if>
             </div>
 
         </form>
     </div>
-
+    <div id="jugeDialog" closed="true" class="easyui-dialog" style="display:none;padding:5px;width:400px;height:200px;"
+         title="危重度评定" data-options="iconCls:'icon-ok'" buttons="#dlg-buttons">
+        <div style="width:90%;word-wrap:break-word;margin:5px;font-size: 15px">请对病人病情危重度进行评定，评定结果将影响到入院顺序：</div>
+        <select readonly="" id="jugeResult" style="margin-left:5px;font-size:15px;width: 120px">
+            <option value="1">
+                轻微
+            </option>
+            <option value="2">
+                较重
+            </option>
+            <option value="3">
+                严重
+            </option>
+            <option value="4">
+                危急
+            </option>
+        </select>
+    </div>
+    <div id="dlg-buttons">
+        <a href="javascript:void(0);" class="easyui-linkbutton" data-options="iconCls:'icon-ok'" onclick="juge()">确定</a>
+    </div>
 </div>
 <script src="${ctxStatic}/js/jquery/jQuery-2.2.0.min.js"
         type="text/javascript" charset="UTF-8"></script>
@@ -258,11 +283,80 @@
     });
     </c:if>
 
-    function toUserInfo() {
-        parent.Open("用户信息", '/userInfo');
+
+    var num = 0;
+
+    function delRow(id) {
+        $("#" + id).remove();
+        num--;
+    }
+
+    function addRow() {
+        num++;
+        var tbody = $("#fileTable tbody");
+        var newTr = '<tr id="tr' + num + '">' +
+            '                            <td>' +
+            '                                <input id="file' + num + '" style="height:30px;width: 260px;" name="file' + num + '">' +
+            '                            </td>' +
+            '                            <td>' +
+            '                                <a id="delFile' + num + '" style="margin-left: 15px" href="javascript:void(0);" onclick="delFile(\'file' + num + '\')">清空</a>' +
+            '                            </td>' +
+            '                            <td>' +
+            '                                <a id="delRow' + num + '" style="margin-left: 15px" href="javascript:void(0);" onclick="delRow(\'tr' + num + '\')">删除</a>' +
+            '                            </td>' +
+            '                        </tr>';
+        tbody.append(newTr);
+        $('#file' + num).filebox({
+            required: true,
+            buttonText: '选择文件',
+            prompt: '选择文件',
+            buttonAlign: 'right'
+        })
+        $('#addRow' + num).linkbutton({
+            iconCls: 'icon-add'
+        });
+        $('#delFile' + num).linkbutton({
+            iconCls: 'icon-reload'
+        });
+        $('#delRow' + num).linkbutton({
+            iconCls: 'icon-remove'
+        });
+    }
+
+    function delFile(id) {
+        $('#' + id).filebox('clear');
+    }
+
+    <c:if test="${empty edit}">
+
+    function openJuge() {
+        $("#jugeDialog").window("open");
+    }
+
+    function juge() {
+        var medicalRecordNo =
+        ${applyInfo.medicalRecordNo}
+        var applyId = ${applyInfo.id}
+            $.ajax({
+                type: 'POST',
+                url: '${ctx}/apply/juge',
+                dataType: "text",
+                data: {
+                    "medicalRecordNo": medicalRecordNo,
+                    "applyId": applyId,
+                    "level": $("#jugeResult").val()
+                },
+                async: true,
+                success: function (data) {
+                    $.messager.alert('提示', data, 'info', function () {
+                        $("#jugeDialog").window("close");
+                    });
+                }
+            });
     }
 
     function sendMsgForFile() {
+        var patientId = ${applyInfo.patientId};
         $.messager.prompt('提示', '请输入需要病人追加的材料', function (val) {
             if (val) {
                 $.ajax({
@@ -270,7 +364,7 @@
                     url: "${ctx}/apply/sendForFile",
                     dataType: "text",
                     data: {
-                        "patientId": ${applyInfo.patientId},
+                        "patientId": patientId,
                         "msg": val
                     },
                     async: true,
@@ -281,6 +375,13 @@
             }
         });
     }
+
+    </c:if>
+
+    function toUserInfo() {
+        parent.Open("用户信息", '/userInfo');
+    }
+
 
     $('#dtList').datagrid({
         url: '${ctx}/apply/getAttachments',
@@ -349,48 +450,7 @@
             buttonAlign: 'right'
         })
     })
-    var num = 0;
 
-    function delRow(id) {
-        $("#" + id).remove();
-        num--;
-    }
-
-    function addRow() {
-        num++;
-        var tbody = $("#fileTable tbody");
-        var newTr = '<tr id="tr' + num + '">' +
-            '                            <td>' +
-            '                                <input id="file' + num + '" style="height:30px;width: 260px;" name="file' + num + '">' +
-            '                            </td>' +
-            '                            <td>' +
-            '                                <a id="delFile' + num + '" style="margin-left: 15px" href="javascript:void(0);" onclick="delFile(\'file' + num + '\')">清空</a>' +
-            '                            </td>' +
-            '                            <td>' +
-            '                                <a id="delRow' + num + '" style="margin-left: 15px" href="javascript:void(0);" onclick="delRow(\'tr' + num + '\')">删除</a>' +
-            '                            </td>' +
-            '                        </tr>';
-        tbody.append(newTr);
-        $('#file' + num).filebox({
-            required: true,
-            buttonText: '选择文件',
-            prompt: '选择文件',
-            buttonAlign: 'right'
-        })
-        $('#addRow' + num).linkbutton({
-            iconCls: 'icon-add'
-        });
-        $('#delFile' + num).linkbutton({
-            iconCls: 'icon-reload'
-        });
-        $('#delRow' + num).linkbutton({
-            iconCls: 'icon-remove'
-        });
-    }
-
-    function delFile(id) {
-        $('#' + id).filebox('clear');
-    }
 
     $('#applyForm').form({
         url: '${ctx}/apply/add',

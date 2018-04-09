@@ -1,11 +1,9 @@
 package com.study.cancer.service.impl;
 
+import cn.com.boco.App;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.study.cancer.dao.ApplyMapper;
-import com.study.cancer.dao.MenueMapper;
-import com.study.cancer.dao.TreatmentProcessMapper;
-import com.study.cancer.dao.UserMapper;
+import com.study.cancer.dao.*;
 import com.study.cancer.model.*;
 import com.study.cancer.service.ApplyService;
 import org.springframework.stereotype.Service;
@@ -13,6 +11,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class ApplyServiceImpl implements ApplyService {
@@ -21,20 +20,26 @@ public class ApplyServiceImpl implements ApplyService {
     ApplyMapper applyMapper;
 
     @Resource
+    BedMapper bedMapper;
+
+    @Resource
     TreatmentProcessMapper treatmentProcessMapper;
 
     @Resource
     UserMapper userMapper;
+
+    @Resource
+    WaitLevelConfigMapper waitLevelConfigMapper;
 
     @Override
     public CommonResult addApply(Apply apply) {
         CommonResult<Object> result = new CommonResult<>();
         HashMap<Object, Object> resulDatatMap = new HashMap<>();
         List<Apply> oldApplys = applyMapper.selectByPatientId(apply.getPatientId());
-        if (oldApplys != null && oldApplys.size() > 0) {//0正在排队 1排队完成 2入院 3爽约
+        if (oldApplys != null && oldApplys.size() > 0) {//0等待处理 1正在排队 2排队完成 3入院 4爽约
             for (Apply oldApply : oldApplys) {
-                if (oldApply.getState().equals("0")) {
-                    result.setMessage("申请正在排队，请勿重复提交");
+                if (!(oldApply.getState().equals("3") || oldApply.getState().equals("4"))) {
+                    result.setMessage("申请已提交过，请勿重复提交");
                     break;
                 }
             }
@@ -44,7 +49,7 @@ public class ApplyServiceImpl implements ApplyService {
             if (insert > 0) {
                 TreatmentProcess treatmentProcess = new TreatmentProcess();
                 treatmentProcess.setCreateDate(apply.getApplyDate());
-                treatmentProcess.setMedicalRecordNo(apply.getMedicalRecordNo()+"");
+                treatmentProcess.setMedicalRecordNo(apply.getMedicalRecordNo() + "");
                 treatmentProcess.setPatientAction("提出入院申请");
                 int insertTreatmentProcess = treatmentProcessMapper.insertSelective(treatmentProcess);
                 result.setSuccess(true);
@@ -113,6 +118,37 @@ public class ApplyServiceImpl implements ApplyService {
             result.setData(users);
         } else {
             result.setMessage("获取该相应权限的用户失败");
+        }
+        return result;
+    }
+
+    @Override
+    public CommonResult arrange() {
+        CommonResult<Object> result = new CommonResult<>();
+        List<Bed> unusedBeds = bedMapper.selectNumByState("0");
+        if (unusedBeds != null && unusedBeds.size() > 0) {
+            WaitLevelConfig waitLevelConfig = waitLevelConfigMapper.selectByPrimaryKey(1);
+            Map map = new HashMap();
+            map.put("limit", unusedBeds.size());
+            map.put("severityWeight", waitLevelConfig.getSeverityWeight());
+            map.put("waitTimeWeight", waitLevelConfig.getWaitTimeWeight());
+            List<Apply> applies = applyMapper.selectByLimitAndWaitLevel(map);
+            if (applies != null && applies.size() > 0) {
+                for (Apply apply : applies) {
+                    apply.setState("2");//排队完成
+                    applyMapper.updateByPrimaryKeySelective(apply);
+                }
+                for (Bed bed : unusedBeds) {
+                    bed.setState("1");
+                    bedMapper.updateByPrimaryKeySelective(bed);
+                }
+                result.setSuccess(true);
+                result.setMessage("床位安排成功");
+            } else {
+                result.setMessage("没有符合条件的入院申请");
+            }
+        } else {
+            result.setMessage("没有床位");
         }
         return result;
     }

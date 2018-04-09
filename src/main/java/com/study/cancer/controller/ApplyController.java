@@ -62,6 +62,13 @@ public class ApplyController extends BaseController {
         }
     }
 
+    @RequestMapping("/juge")
+    @ResponseBody
+    public String juge(String medicalRecordNo, String applyId, String level) {
+        CommonResult result = medicalRecordService.jugeSeverity(medicalRecordNo, level, applyId);
+        return result.getMessage();
+    }
+
     @RequestMapping("/myApplyList")
     public String myApplyList() {
         return "/apply_list";

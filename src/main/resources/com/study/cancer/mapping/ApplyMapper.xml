@@ -247,4 +247,12 @@
         </where>
         ORDER BY apply_date ASC
     </select>
+
+    <select id="selectByLimitAndWaitLevel" parameterType="hashmap" resultType="Apply">
+        SELECT t1.id,medical_record_no, t1.patient_id, apply_date, state, to_hospital_date, wait_level,
+        leucocyte_concentration, neutrophil_concentration, remark,severity
+        FROM apply t1 LEFT JOIN medical_record t2 ON t1.medical_record_no=t2.id
+        WHERE t1.state='1'
+        ORDER BY  datediff(CURDATE(), apply_date)*#{waitTimeWeight}+severity*#{severityWeight} DESC limit #{limit}
+    </select>
 </mapper>

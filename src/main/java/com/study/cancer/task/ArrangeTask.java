@@ -1,13 +1,23 @@
 package com.study.cancer.task;
 
+import com.study.cancer.dao.ApplyMapper;
+import com.study.cancer.dao.BedMapper;
+import com.study.cancer.model.Apply;
+import com.study.cancer.service.ApplyService;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+
+import javax.annotation.Resource;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  * 自动安排入院的定时器
  */
 @Component
 public class ArrangeTask {
+    @Resource
+    ApplyService applyService;
     /**
      * CronTrigger配置完整格式为： [秒] [分] [小时] [日] [月] [周] [年]
      * * 表示所有值. 例如:在分的字段上设置 "*",表示每一分钟都会触发。
@@ -47,6 +57,11 @@ public class ArrangeTask {
     @Scheduled(cron = "0 7 16 * * ? ")
     public void test() {
         System.out.println("定时任务");
+    }
+
+    @Scheduled(cron = "0 0 0/1 * * ? ")
+    public void ArrangeInHospital() {
+        applyService.arrange();
     }
 }
 

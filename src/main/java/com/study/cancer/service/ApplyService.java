@@ -18,4 +18,6 @@ public interface ApplyService {
     CommonResult getApplyById(Integer applyId);
 
     CommonResult getUserByAuthorization(String authorization);
+
+    CommonResult arrange();
 }
