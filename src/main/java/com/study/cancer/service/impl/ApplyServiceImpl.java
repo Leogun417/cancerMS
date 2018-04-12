@@ -9,9 +9,8 @@ import com.study.cancer.service.ApplyService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 @Service
 public class ApplyServiceImpl implements ApplyService {
@@ -136,6 +135,18 @@ public class ApplyServiceImpl implements ApplyService {
             if (applies != null && applies.size() > 0) {
                 for (Apply apply : applies) {
                     apply.setState("2");//排队完成
+                    Calendar calendar = Calendar.getInstance();
+                    Date now = new Date();
+                    calendar.setTime(now);
+                    GregorianCalendar gregorianCalendar = new GregorianCalendar();
+                    int amOrpm = gregorianCalendar.get(GregorianCalendar.AM_PM);
+                    if (amOrpm == 0) {
+                        calendar.add(Calendar.HOUR_OF_DAY, +5);//如果是上午，就五个小时内入院
+                        apply.setToHospitalDate(calendar.getTime());
+                    } else {//如果是下午，就安排第二前天入院
+                        calendar.add(Calendar.DAY_OF_YEAR, +1);
+                        apply.setToHospitalDate(calendar.getTime());
+                    }
                     applyMapper.updateByPrimaryKeySelective(apply);
                 }
                 int count = 0;
