@@ -275,9 +275,13 @@ public class BaseController {
         }
     }
 
+    /**
+     * 本系统设置的最多二级菜单
+     * @return
+     */
     @RequestMapping("/getMenu")
     @ResponseBody
-    public Object getMenu() throws UnsupportedEncodingException {
+    public Object getMenu() {
         User loginUser = getLoginUser();
         String athorization = loginUser.getAthorization();
         CommonResult result = loginService.getMenueByLevel(athorization);
@@ -285,14 +289,42 @@ public class BaseController {
             List<Menue> data = (List<Menue>) result.getData();
             StringBuffer menueData = new StringBuffer("[");
             for (Menue menue : data) {
-                if ("no".equals(menue.getHaschild())) {
+                List<Menue> childMenues = new ArrayList<>();
+                if ("no".equals(menue.getHaschild()) && "0".equals(menue.getParentNode())) {//没有父节点且没有子节点
                     menueData.append("{" +
                             "text:'" + menue.getNodeText() + "'," +
                             "attributes:{" +
                             "url:'" + menue.getUrl() + "'" +
                             "}" +
                             "},");
+                } else if ("yes".equals(menue.getHaschild()) && "0".equals(menue.getParentNode())) {//没有父节点但有子节点
+                    for (Menue child : data) {
+                        if (child.getParentNode().equals(String.valueOf(menue.getId()))) {
+                            childMenues.add(child);
+                        }
+                    }
+                    StringBuffer childData = new StringBuffer("[");
+                    for (Menue childMenue : childMenues) {
+                        childData.append("{" +
+                                "text:'" + childMenue.getNodeText() + "'," +
+                                "attributes:{" +
+                                "url:'" + childMenue.getUrl() + "'" +
+                                "}" +
+                                "},");
+                    }
+                    childData.deleteCharAt(childData.length() - 1);
+                    childData.append("]");
+                    menueData.append("{" +
+                            "text:'" + menue.getNodeText() + "'," +
+                            "state:'closed'," +
+                            "children:" +
+                            childData.toString() + "," +
+                            "attributes:{" +
+                            "url:'" + menue.getUrl() + "'," +
+                            "}" +
+                            "},");
                 }
+
             }
             menueData.deleteCharAt(menueData.length() - 1);
             menueData.append("]");
@@ -359,7 +391,7 @@ public class BaseController {
                         String fileName = file.getOriginalFilename();
                         // 获得文件扩展名
                         String prefix = myFileName.substring(myFileName.lastIndexOf(".") + 1);
-                        // 定义上传路径，使用转诊单号建立文件夹，便于区分文件
+                        // 定义上传路径，使用就诊单号建立文件夹，便于区分文件
                         File localFile = new File(path + File.separator + recordNo + File.separator + fileName);
 
                         // 判断是否存在文件夹，如果不存在则创建文件夹
@@ -375,12 +407,7 @@ public class BaseController {
                         attachment.setAttachmentPath(path + File.separator + recordNo + File.separator);
                         attachment.setMedicalRecordNo(recordNo + "");
                         attachment.setTreatmentProcessId(treatmentProcessId);
-                        if (!"".equals(applyNo)) {
-                            attachment.setApplyId(applyNo + "");
-                            attachment.setType("apply");
-                        } else {
-                            attachment.setType("process");
-                        }
+                        attachment.setType(prefix);
                         result = attachmentService.addAttachment(attachment);
                     }
                 }

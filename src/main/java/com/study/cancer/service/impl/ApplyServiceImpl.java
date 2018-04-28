@@ -39,31 +39,32 @@ public class ApplyServiceImpl implements ApplyService {
             for (Apply oldApply : oldApplys) {
                 if (!(oldApply.getState().equals("3") || oldApply.getState().equals("4"))) {
                     result.setMessage("申请已提交过，请勿重复提交");
-                    break;
+                    return result;
                 }
             }
 
-        } else {
-            int insert = applyMapper.insertSelective(apply);
-            if (insert > 0) {
-                TreatmentProcess treatmentProcess = new TreatmentProcess();
-                treatmentProcess.setCreateDate(apply.getApplyDate());
-                treatmentProcess.setMedicalRecordNo(apply.getMedicalRecordNo() + "");
-                treatmentProcess.setPatientAction("提出入院申请");
-                int insertTreatmentProcess = treatmentProcessMapper.insertSelective(treatmentProcess);
-                result.setSuccess(true);
-                resulDatatMap.put("applyId", apply.getId());
-                if (insertTreatmentProcess <= 0) {
-                    result.setMessage("申请提交成功,但未成功建立过程");
-                    return result;
-                }
-                resulDatatMap.put("treatmentProcessId", treatmentProcess.getId());
-                result.setData(resulDatatMap);
-                result.setMessage("申请提交成功");
-            } else {
-                result.setMessage("申请提交失败");
-            }
         }
+
+        int insert = applyMapper.insertSelective(apply);
+        if (insert > 0) {
+            TreatmentProcess treatmentProcess = new TreatmentProcess();
+            treatmentProcess.setCreateDate(apply.getApplyDate());
+            treatmentProcess.setMedicalRecordNo(apply.getMedicalRecordNo() + "");
+            treatmentProcess.setPatientAction("提出入院申请");
+            int insertTreatmentProcess = treatmentProcessMapper.insertSelective(treatmentProcess);
+            result.setSuccess(true);
+            resulDatatMap.put("applyId", apply.getId());
+            if (insertTreatmentProcess <= 0) {
+                result.setMessage("申请提交成功,但未成功建立过程");
+                return result;
+            }
+            resulDatatMap.put("treatmentProcessId", treatmentProcess.getId());
+            result.setData(resulDatatMap);
+            result.setMessage("申请提交成功");
+        } else {
+            result.setMessage("申请提交失败");
+        }
+
         return result;
     }
 
@@ -131,10 +132,11 @@ public class ApplyServiceImpl implements ApplyService {
             map.put("limit", unusedBeds.size());
             map.put("severityWeight", waitLevelConfig.getSeverityWeight());
             map.put("waitTimeWeight", waitLevelConfig.getWaitTimeWeight());
+            map.put("breakAppointmentWeight", waitLevelConfig.getBreakAppointmentWeight());
             List<Apply> applies = applyMapper.selectByLimitAndWaitLevel(map);
             if (applies != null && applies.size() > 0) {
                 for (Apply apply : applies) {
-                    apply.setState("2");//排队完成
+                    apply.setState(ApplyStateConstant.FINISH_LINE_UP);//排队完成
                     Calendar calendar = Calendar.getInstance();
                     Date now = new Date();
                     calendar.setTime(now);
@@ -149,14 +151,12 @@ public class ApplyServiceImpl implements ApplyService {
                     }
                     applyMapper.updateByPrimaryKeySelective(apply);
                 }
-                int count = 0;
-                for (Bed bed : unusedBeds) {
-                    if (count == applies.size()) {
-                        break;
-                    }
+                for (int i = 0; i < applies.size(); i++) {
+                    Bed bed = unusedBeds.get(i);
+                    Apply apply = applies.get(i);
                     bed.setState("1");
+                    bed.setPatientId(apply.getPatientId() + "");
                     bedMapper.updateByPrimaryKeySelective(bed);
-                    count++;
                 }
 
                 result.setSuccess(true);
@@ -166,6 +166,19 @@ public class ApplyServiceImpl implements ApplyService {
             }
         } else {
             result.setMessage("没有床位");
+        }
+        return result;
+    }
+
+    @Override
+    public CommonResult modifyApply(Apply apply) {
+        CommonResult<Object> result = new CommonResult<>();
+        int update = applyMapper.updateByPrimaryKeySelective(apply);
+        if (update > 0) {
+            result.setMessage("成功！");
+            result.setSuccess(true);
+        } else {
+            result.setMessage("失败！");
         }
         return result;
     }

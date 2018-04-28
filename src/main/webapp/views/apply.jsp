@@ -156,30 +156,6 @@
                 <a style="color:#0E2D5F;float: right" href="javascript:void(0);" onclick="toUserInfo()">个人信息有误？点击修改</a>
             </c:if>
             <div class="row" style="margin-top: 50px">
-                <div class="col-md-6 col-sm-6">
-                    <div class="cancer-group row">
-                        <label class="pull-left label-lg"><span>*</span>白细胞浓度:</label>
-                        <div>
-                            <input value="${applyInfo.leucocyteConcentration}"
-                                   style="font-size:15px;height: 25px;width: 160px;margin-left: 15px;background-color: #f2f2f2;"
-                                   class="easyui-textbox" required="true"
-                                   type="text" name="leucocyteConcentration"
-                                   id="leucocyteConcentration"/>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6 col-sm-6">
-                    <div class="cancer-group row">
-                        <label class="pull-left label-lg"><span>*</span>中性粒细胞浓度:</label>
-                        <div>
-                            <input value="${applyInfo.neutrophilConcentration}"
-                                   style="font-size:15px;height: 25px;width: 160px;margin-left: 15px;background-color: #f2f2f2;"
-                                   class="easyui-textbox" required="true"
-                                   type="text" name="neutrophilConcentration"
-                                   id="neutrophilConcentration"/>
-                        </div>
-                    </div>
-                </div>
                 <div class="col-md-12 col-sm-12">
                     <div class="cancer-group row">
                         <label class="pull-left label-lg">备　　注:</label>
@@ -227,10 +203,17 @@
                            style="margin-left: 45%;" value="提交"/>
                 </c:if>
                 <c:if test="${empty edit}">
-                    <c:if test="${applyInfo.state eq 0 or applyInfo.state eq 1}">
+                    <%--普通医生审核材料，等待审核的时候可以要求追加--%>
+                    <c:if test="${applyInfo.state eq 0 and loginUser.athorization eq 2}">
                         <button onclick="sendMsgForFile()" type="button" class="btn btn-primary"
                                 style="margin-left: 40%;">要求追加材料
                         </button>
+                        <button onclick="pass()" type="button" class="btn btn-primary"
+                                style="margin-left: 15px;">通过审核
+                        </button>
+                    </c:if>
+                    <%--主任医师级才能评定--%>
+                    <c:if test="${applyInfo.state eq 1 and loginUser.athorization eq 3}">
                         <button onclick="openJuge()" type="button" class="btn btn-primary"
                                 style="margin-left: 15px;">危重度评定
                         </button>
@@ -245,16 +228,16 @@
         <div style="width:90%;word-wrap:break-word;margin:5px;font-size: 15px">请对病人病情危重度进行评定，评定结果将影响到入院顺序：</div>
         <select readonly="" id="jugeResult" style="margin-left:5px;font-size:15px;width: 120px">
             <option value="1">
-                轻微
+                1--轻微
             </option>
             <option value="2">
-                较重
+                2--较重
             </option>
             <option value="3">
-                严重
+                3--严重
             </option>
             <option value="4">
-                危急
+                4--危急
             </option>
         </select>
     </div>
@@ -270,6 +253,7 @@
         type="text/javascript" charset="UTF-8"></script>
 <script src="${ctxStatic}/js/idCardNoValidation.js"></script>
 <script type="text/javascript">
+    var medicalRecordNo;
     <c:if test="${empty edit}">
     $('input').each(function () {
         $(this).attr("required", false);
@@ -281,6 +265,16 @@
     $('textarea').each(function () {
         $(this).attr("readonly", "readonly");
     });
+    medicalRecordNo = ${applyInfo.medicalRecordNo};
+
+    function pass() {
+        var params = new Object();
+        params.applyId = ${applyInfo.id}
+            $.post("${ctx}/apply/pass", params, function (result) {
+                $.messager.alert('提示', result.message);
+            });
+    }
+
     </c:if>
 
 
@@ -364,6 +358,7 @@
                     url: "${ctx}/apply/sendForFile",
                     dataType: "text",
                     data: {
+                        "medicalRecordNo": medicalRecordNo,
                         "patientId": patientId,
                         "msg": val
                     },

@@ -59,7 +59,7 @@ public class ArrangeTask {
         System.out.println("定时任务");
     }
 
-    @Scheduled(cron = "0 0 0/1 * * ? ")
+    @Scheduled(cron = "0 25 0/1 * * ? ")
     public void ArrangeInHospital() {
         applyService.arrange();
     }

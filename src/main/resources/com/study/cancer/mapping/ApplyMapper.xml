@@ -209,10 +209,10 @@
     <select id="selectList" parameterType="hashmap" resultType="ApplyListVo">
 
         select
-        t1.id,medical_record_no, patient_id, apply_date, state, to_hospital_date, wait_level,
+        t1.id,medical_record_no, t1.patient_id, apply_date, t1.state, to_hospital_date, wait_level,
         leucocyte_concentration, neutrophil_concentration, remark,
-        sex,username,id_card_no,phone_number,athorization,medical_group,age
-        from apply t1 LEFT JOIN user t2 ON t1.patient_id=t2.id
+        sex,username,id_card_no,phone_number,athorization,medical_group,age,bed_no
+        from apply t1 LEFT JOIN user t2 ON t1.patient_id=t2.id LEFT JOIN bed t3 ON t1.patient_id=t3.patient_id
         <where>
             <if test="applyId != null">
                 t1.id = #{applyId}
@@ -250,9 +250,9 @@
 
     <select id="selectByLimitAndWaitLevel" parameterType="hashmap" resultType="Apply">
         SELECT t1.id,medical_record_no, t1.patient_id, apply_date, state, to_hospital_date, wait_level,
-        leucocyte_concentration, neutrophil_concentration, remark,severity
+        leucocyte_concentration, neutrophil_concentration, remark,severity,break_times
         FROM apply t1 LEFT JOIN medical_record t2 ON t1.medical_record_no=t2.id
-        WHERE t1.state='1'
-        ORDER BY  datediff(CURDATE(), apply_date)*#{waitTimeWeight}+severity*#{severityWeight} DESC limit #{limit}
+        WHERE t1.state='2'
+        ORDER BY  break_times*#{breakAppointmentWeight}+datediff(CURDATE(), apply_date)*#{waitTimeWeight}+severity*#{severityWeight} DESC limit #{limit}
     </select>
 </mapper>

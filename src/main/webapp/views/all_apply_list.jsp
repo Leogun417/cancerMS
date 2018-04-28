@@ -49,11 +49,13 @@
                 <span>申请单状态：</span>
                 <select editable="false" style="width: 120px" class="easyui-combobox" id="state">
                     <option value="">全部</option>
-                    <option value="0">等待处理</option>
-                    <option value="1">正在排队</option>
-                    <option value="2">排队完成</option>
-                    <option value="3">已入院</option>
-                    <option value="4">爽约</option>
+                    <option value="0">等待审核材料</option>
+                    <option value="1">等待病情评估</option>
+                    <option value="2">正在排队</option>
+                    <option value="3">排队完成</option>
+                    <option value="4">已入院</option>
+                    <option value="5">爽约</option>
+                    <option value="6">无法化疗</option>
                 </select>
                 <span style="margin-right: 15px;margin-left: 15px">申请日期:</span>
                 <span style="margin-right: 15px">从</span>
@@ -195,19 +197,19 @@
                     width: 80,
                     formatter: function (value, row, index) {
                         if (value == '0') {
-                            return "等待处理";
-                        }
-                        if (value == '1') {
+                            return "等待审核材料";
+                        } else if (value == '1') {
+                            return "等待病情评估";
+                        } else if (value == '2') {
                             return "正在排队";
-                        }
-                        if (value == '2') {
+                        } else if (value == '3') {
                             return "排队完成";
-                        }
-                        if (value == '3') {
+                        } else if (value == '4') {
                             return "已入院";
-                        }
-                        if (value == '4') {
+                        } else if (value == '5') {
                             return "<span style='color: red'>爽约</span>";
+                        } else {
+                            return "无法化疗";
                         }
                     }
                 },
@@ -222,7 +224,21 @@
                     width: 120,
                     formatter: function (value, row, index) {
                         var res;
-                        if (row.state == 0) {
+                        if (row.state != 3) {
+                            res = '等待安排'
+                        } else {
+                            res = value;
+                        }
+                        return res;
+                    }
+                },
+                {
+                    field: 'bedNo',
+                    title: '床位编号',
+                    width: 80,
+                    formatter: function (value, row, index) {
+                        var res;
+                        if (row.state != 3) {
                             res = '等待安排'
                         } else {
                             res = value;
@@ -251,7 +267,7 @@
     })
 
     function showApply(username, applyId) {
-        parent.Open(applyId + "号申请_" +　username, '/apply/showApply/' + applyId);
+        parent.Open(applyId + "号申请_" + username, '/apply/showApply/' + applyId);
     }
 
     $.extend($.fn.validatebox.defaults.rules, {

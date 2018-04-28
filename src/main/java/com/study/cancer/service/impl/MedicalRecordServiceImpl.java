@@ -3,6 +3,7 @@ package com.study.cancer.service.impl;
 import com.study.cancer.dao.ApplyMapper;
 import com.study.cancer.dao.MedicalRecordMapper;
 import com.study.cancer.model.Apply;
+import com.study.cancer.model.ApplyStateConstant;
 import com.study.cancer.model.CommonResult;
 import com.study.cancer.model.MedicalRecord;
 import com.study.cancer.service.ApplyService;
@@ -43,7 +44,7 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
             if (update > 0) {
                 Apply apply = new Apply();
                 apply.setId(Integer.parseInt(applyId));
-                apply.setState("1");//申请单状态为正在排队
+                apply.setState(ApplyStateConstant.LINE_UP);//申请单状态为正在排队
                 applyMapper.updateByPrimaryKeySelective(apply);
                 result.setSuccess(true);
                 result.setMessage("危重度评定成功");

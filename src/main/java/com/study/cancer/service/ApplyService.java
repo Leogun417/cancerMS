@@ -20,4 +20,6 @@ public interface ApplyService {
     CommonResult getUserByAuthorization(String authorization);
 
     CommonResult arrange();
+
+    CommonResult modifyApply(Apply apply);
 }

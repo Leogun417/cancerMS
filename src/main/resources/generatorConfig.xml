@@ -110,5 +110,10 @@
                enableSelectByExample="false" selectByExampleQueryId="false" >
             <property name="useActualColumnNames" value="false"/>
         </table>
+        <table tableName="leave_data" domainObjectName="leaveData"
+               enableCountByExample="false" enableUpdateByExample="false" enableDeleteByExample="false"
+               enableSelectByExample="false" selectByExampleQueryId="false" >
+            <property name="useActualColumnNames" value="false"/>
+        </table>
     </context>
 </generatorConfiguration>

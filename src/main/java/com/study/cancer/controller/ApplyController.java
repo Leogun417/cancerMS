@@ -65,8 +65,18 @@ public class ApplyController extends BaseController {
     @RequestMapping("/juge")
     @ResponseBody
     public String juge(String medicalRecordNo, String applyId, String level) {
-        CommonResult result = medicalRecordService.jugeSeverity(medicalRecordNo, level, applyId);
-        return result.getMessage();
+        TreatmentProcess treatmentProcess = new TreatmentProcess();
+        treatmentProcess.setCreateDate(new Date());
+        treatmentProcess.setMedicalRecordNo(medicalRecordNo + "");
+        treatmentProcess.setDoctorAction("病情危重级别评定为" + level + "级");
+        treatmentProcess.setDoctorName(getLoginUser().getUsername());
+        CommonResult processResult = treatmentProcessService.addProcess(treatmentProcess);
+        if (processResult.isSuccess()) {
+            CommonResult result = medicalRecordService.jugeSeverity(medicalRecordNo, level, applyId);
+            return result.getMessage();
+        } else {
+            return processResult.getMessage();
+        }
     }
 
     @RequestMapping("/myApplyList")
@@ -85,7 +95,7 @@ public class ApplyController extends BaseController {
         Integer patientId = getLoginUser().getId();
         Date now = new Date();
         apply.setPatientId(patientId);
-        apply.setState("0");//0正在排队 1排队完成 2入院 3爽约
+        apply.setState(ApplyStateConstant.WAIT_TO_CHECK_DATA);//0等待材料审核 1等待病情评估 2正在排队 3排队完成 4入院 5爽约）
         apply.setApplyDate(now);
         apply.setToHospitalDate(now);
         MedicalRecord medicalRecord = new MedicalRecord();
@@ -117,7 +127,7 @@ public class ApplyController extends BaseController {
         if (processResult.isSuccess()) {
             TreatmentProcess process = (TreatmentProcess) processResult.getData();
             CommonResult result = uploadMore(request, medicalRecordNo, applyId, process.getId() + "");
-            CommonResult userByAuthorization = applyService.getUserByAuthorization("3");
+            CommonResult userByAuthorization = applyService.getUserByAuthorization("2");
             if (userByAuthorization.isSuccess()) {
                 List<User> users = (List<User>) userByAuthorization.getData();
                 for (User user : users) {
@@ -133,9 +143,17 @@ public class ApplyController extends BaseController {
 
     @RequestMapping(value = "/sendForFile", method = RequestMethod.POST)
     @ResponseBody
-    public String sendForFile(Integer patientId, String msg) throws IOException {
-        sendMsg(patientId, "请追加以下材料：" + msg, TabData.SHOW_APPLY_LIST_FOR_SELF, TabData.tabMap.get(TabData.SHOW_APPLY_LIST_FOR_SELF), "0", "0");
-        return "success";
+    public String sendForFile(Integer patientId, String msg, String medicalRecordNo) throws IOException {
+        TreatmentProcess treatmentProcess = new TreatmentProcess();
+        treatmentProcess.setCreateDate(new Date());
+        treatmentProcess.setMedicalRecordNo(medicalRecordNo + "");
+        treatmentProcess.setDoctorAction("请求病人不全材料：" + msg);
+        treatmentProcess.setDoctorName(getLoginUser().getUsername());
+        CommonResult processResult = treatmentProcessService.addProcess(treatmentProcess);
+        if (processResult.isSuccess()) {
+            sendMsg(patientId, "请追加以下材料：" + msg, TabData.SHOW_APPLY_LIST_FOR_SELF, TabData.tabMap.get(TabData.SHOW_APPLY_LIST_FOR_SELF), "0", "0");
+        }
+        return processResult.getMessage();
     }
 
     /**
@@ -143,7 +161,7 @@ public class ApplyController extends BaseController {
      * @param rows
      * @param applyStartDate
      * @param applyEndDate
-     * @param state          正在排队 排队完成 入院 爽约
+     * @param state          等待材料审核 等待病情评估 正在排队 排队完成 入院 爽约）
      * @return
      */
     @RequestMapping("/getSelfList")
@@ -182,6 +200,16 @@ public class ApplyController extends BaseController {
         }
         PageInfo applyList = applyService.getList(page, rows, null, applyStartDate, applyEndDate, state, patientName, medicalRecordNo);
         return applyList;
+    }
+
+    @RequestMapping("/pass")
+    @ResponseBody
+    public CommonResult pass(String applyId) {
+        Apply apply = new Apply();
+        apply.setId(Integer.parseInt(applyId));
+        apply.setState(ApplyStateConstant.WAIT_TO_CHECK_CONDITION);
+        CommonResult result = applyService.modifyApply(apply);
+        return result;
     }
 
 }
