@@ -149,4 +149,11 @@
       doctor_name = #{doctorName,jdbcType=VARCHAR}
     where id = #{id,jdbcType=INTEGER}
   </update>
+
+  <select id="selectByMedicalRecordNo" parameterType="string" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from treatment_process
+    where medical_record_no=#{_parameter}
+  </select>
 </mapper>

@@ -6,4 +6,5 @@ import com.study.cancer.model.MedicalRecord;
 public interface MedicalRecordService {
     CommonResult addRecord(MedicalRecord medicalRecord);
     CommonResult jugeSeverity(String medicalRecordNo, String level, String applyId);
+    CommonResult showRecordList(int page, int rows, String patientName, String phoneNumber, String medicalRecordNo, String medicalGroup);
 }

@@ -1,16 +1,18 @@
 package com.study.cancer.service.impl;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.study.cancer.dao.ApplyMapper;
 import com.study.cancer.dao.MedicalRecordMapper;
-import com.study.cancer.model.Apply;
-import com.study.cancer.model.ApplyStateConstant;
-import com.study.cancer.model.CommonResult;
-import com.study.cancer.model.MedicalRecord;
+import com.study.cancer.model.*;
 import com.study.cancer.service.ApplyService;
 import com.study.cancer.service.MedicalRecordService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class MedicalRecordServiceImpl implements MedicalRecordService {
@@ -55,6 +57,27 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
         } else {
             result.setMessage("获取旧记录失败");
         }
+        return result;
+    }
+
+    @Override
+    public CommonResult showRecordList(int page, int rows, String patientName, String phoneNumber, String medicalRecordNo, String medicalGroup) {
+        PageHelper.startPage(page, rows);
+        CommonResult<Object> result = new CommonResult<>();
+        Map<Object, Object> map = new HashMap<>();
+        map.put("patientName", patientName);
+        map.put("phoneNumber", phoneNumber);
+        map.put("medicalRecordNo", medicalRecordNo);
+        map.put("medicalGroup", medicalGroup);
+        List<MedicalRecordListVo> medicalRecordListVos = medicalRecordMapper.selectList(map);
+        PageInfo<MedicalRecordListVo> medicalRecordListVoPageInfo = new PageInfo<>(medicalRecordListVos);
+        if (medicalRecordListVos != null && medicalRecordListVos.size() > 0) {
+            result.setSuccess(true);
+            result.setMessage("获取就诊记录列表成功");
+        } else {
+            result.setMessage("获取就诊记录列表失败");
+        }
+        result.setData(medicalRecordListVoPageInfo);
         return result;
     }
 }

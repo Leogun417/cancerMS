@@ -1,6 +1,10 @@
 package com.study.cancer.dao;
 
 import com.study.cancer.model.MedicalRecord;
+import com.study.cancer.model.MedicalRecordListVo;
+
+import java.util.List;
+import java.util.Map;
 
 public interface MedicalRecordMapper {
     /**
@@ -50,4 +54,6 @@ public interface MedicalRecordMapper {
      * @mbggenerated Fri Apr 27 14:46:40 CST 2018
      */
     int updateByPrimaryKey(MedicalRecord record);
+
+    List<MedicalRecordListVo> selectList(Map map);
 }

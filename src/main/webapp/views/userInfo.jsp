@@ -140,7 +140,7 @@
                     </div>
                 </div>
                 <div class="row">
-                    <input type="submit" class="btn btn-primary" value="确认""/>
+                    <input type="submit" class="btn btn-primary" value="确认"/>
                 </div>
             </form>
         </div>
