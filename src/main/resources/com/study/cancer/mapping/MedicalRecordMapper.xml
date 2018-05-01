@@ -25,7 +25,7 @@
           This element was generated on Fri Apr 27 14:46:40 CST 2018.
         -->
         id, patient_id, first_in_hospital_date, severity, is_in_hospital, next_to_hospital_date,
-        treatment_plan, treatment_times, to_hospital_times, break_times
+        treatment_plan, treatment_times, to_hospital_times, break_times, state
     </sql>
     <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
         <!--
@@ -200,7 +200,7 @@
     <select id="selectList" parameterType="map" resultType="MedicalRecordListVo">
         select
         t1.id, patient_id, first_in_hospital_date, severity, is_in_hospital, next_to_hospital_date,
-        treatment_plan, treatment_times, to_hospital_times, break_times, t2.medical_group, t2.username, t2.sex, t2.age, t2.phone_number
+        treatment_plan, treatment_times, to_hospital_times, break_times, t2.medical_group, t2.username, t2.sex, t2.age, t2.phone_number,t1.state
         from medical_record t1 LEFT JOIN (SELECT * FROM user WHERE athorization='1') t2
         ON t1.patient_id=t2.id
         <where>
@@ -208,6 +208,7 @@
             <if test="phoneNumber != null">AND t2.phone_number = #{phoneNumber}</if>
             <if test="medicalRecordNo != null">AND t1.id = #{medicalRecordNo}</if>
             <if test="medicalGroup != null">AND t2.medical_group = #{medicalGroup}</if>
+            <if test="state != null">AND t1.state = #{state}</if>
         </where>
     </select>
 </mapper>

@@ -4,15 +4,7 @@
 <html>
 <head>
     <title>肿瘤患者化疗管理系统-申请查看</title>
-    <style type="text/css">
-    </style>
-    <link rel="stylesheet" href="${ctxStatic}/js/bootstrap/css/bootstrap.min.css">
-    <link href="${ctxStatic}/themes/easyui/easyui.css" media="screen"
-          rel="stylesheet" type="text/css"/>
-    <link href="${ctxStatic}/themes/easyui/easyui_default.css"
-          media="screen" rel="stylesheet" type="text/css">
-    <link href="${ctxStatic}/themes/easyui/icon.css" media="screen"
-          media="screen" rel="stylesheet" type="text/css">
+
     <style type="text/css">
         input {
             height: 25px;
@@ -32,7 +24,32 @@
         span {
             font-size: 15px;
         }
+
+        .cancer-group {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .cancer-group label {
+            font-size: 15px;
+        }
+
+        .userInfo .cancer-group input {
+            font-size: 15px;
+            margin-left: 15px;
+        }
+
+        .userInfo .cancer-group select {
+            margin-left: 15px;
+        }
     </style>
+    <link rel="stylesheet" href="${ctxStatic}/js/bootstrap/css/bootstrap.min.css">
+    <link href="${ctxStatic}/themes/easyui/easyui.css" media="screen"
+          rel="stylesheet" type="text/css"/>
+    <link href="${ctxStatic}/themes/easyui/easyui_default.css"
+          media="screen" rel="stylesheet" type="text/css">
+    <link href="${ctxStatic}/themes/easyui/icon.css" media="screen"
+          media="screen" rel="stylesheet" type="text/css">
 </head>
 
 <body style="background-color: #f2f2f2">
@@ -76,6 +93,43 @@
         <a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-ok'" onclick="closeDialogAndWin()">确定</a>
     </div>
 </div>
+
+<div id="win" class="easyui-window userInfo" closed="true" title="入院"
+     style="display:none;width:300px;height:200px;">
+    <form id="inHospitalForm" style="margin-top: 15px;margin-left: 10px">
+        <input type="hidden" name="patientId" id="patientIdOfWin"/>
+        <input type="hidden" name="applyId" id="applyIdOfWin"/>
+        <input type="hidden" name="medicalRecordNo" id="medicalRecordNoOfWin"/>
+        <div class="cancer-group row">
+            <label class="pull-left label-lg"><span>*</span>制定治疗组:</label>
+            <div>
+                <select id="group" data-options="validType:'selectValidate[\'#group\'] '" name="group" editable="false" style="height:25px;width: 100px;margin-bottom: 10px" class="easyui-combobox row">
+                    <option value="">请选择</option>
+                    <c:if test="${not empty medicalGroupList}">
+                        <c:forEach items="${medicalGroupList}" var="group">
+                            <option value="${group.id}">${group.name}</option>
+                        </c:forEach>
+                    </c:if>
+                </select>
+            </div>
+        </div>
+        <div class="cancer-group row">
+            <label class="pull-left label-lg"><span>*</span>治疗方案:</label>
+            <div>
+                <input required="true" name="treatmentPlan" class="easyui-textbox row" style="height: 25px" id="treatmentPlan">
+            </div>
+        </div>
+        <div class="cancer-group row">
+            <label class="pull-left label-lg"><span>*</span>何时进行方案评估:</label>
+            <div>
+                第<input required="true" name="treatmentTimes" class="easyui-textbox row" style="height: 25px" id="treatmentTimes">次入院
+            </div>
+        </div>
+        <div class="row">
+            <input type="submit" class="btn btn-primary" value="确认"/>
+        </div>
+    </form>
+</div>
 <script src="${ctxStatic}/js/jquery/jQuery-2.2.0.min.js"
         type="text/javascript" charset="UTF-8"></script>
 <script src="${ctxStatic}/js/easyui/jquery.easyui.min.js"
@@ -87,6 +141,19 @@
     var end_date;
     var start_date;
 
+    $('#inHospitalForm').form({
+        url: '${ctx}/apply/inHospital',
+        onSubmit: function () {
+            return $(this).form('validate');
+        },
+        success: function (data) {
+            var data = eval ("(" + data + ")");
+            var message = data.message;
+            $.messager.alert('提示', data.message, 'info', function () {
+                $("#win").window("close");
+            });
+        }
+    });
     $("#search").click(function () {
         if (end_date < start_date) {
             $.messager.alert('提示', '日期输入不合法！', 'error');
@@ -184,12 +251,12 @@
                 {
                     field: 'username',
                     title: '患者姓名',
-                    width: 80
+                    width: 60
                 },
                 {
                     field: 'medicalRecordNo',
                     title: '就诊号',
-                    width: 80
+                    width: 60
                 },
                 {
                     field: 'state',
@@ -224,7 +291,7 @@
                     width: 120,
                     formatter: function (value, row, index) {
                         var res;
-                        if (row.state != 3) {
+                        if (row.state < 3 && (row.state != 5 || row.state != 6)) {
                             res = '等待安排'
                         } else {
                             res = value;
@@ -235,10 +302,10 @@
                 {
                     field: 'bedNo',
                     title: '床位编号',
-                    width: 80,
+                    width: 60,
                     formatter: function (value, row, index) {
                         var res;
-                        if (row.state != 3) {
+                        if (row.state < 3 && (row.state != 5 || row.state != 6)) {
                             res = '等待安排'
                         } else {
                             res = value;
@@ -251,7 +318,14 @@
                     title: '操作',
                     width: 120,
                     formatter: function (value, row, index) {
-                        return "<a class='editcls' class='easyui-linkbutton' onclick=\"showApply('" + row.username + "'," + row.id + ")\"></a>"
+                        var content = "<a class='editcls' class='easyui-linkbutton' onclick=\"showApply('" + row.username + "'," + row.id + ")\"></a>";
+                        <c:if test="${loginUser.athorization eq '3'}">
+                        if (row.state == '3') {
+                            content = content +
+                                "<a class='inHospitalcls' class='easyui-linkbutton' onclick=\"inHospital(" + row.id + "," + row.medicalRecordNo + "," + row.patientId + "," + row.medicalGroup + ")\"></a>";
+                        }
+                        </c:if>
+                        return content;
                     }
                 }
             ]
@@ -261,6 +335,7 @@
                 $(this).attr("title", $(this).text());
             });
             $('.editcls').linkbutton({text: '查看', plain: true, iconCls: 'icon-dakai'});
+            $('.inHospitalcls').linkbutton({text: '入院', plain: true, iconCls: 'icon-dakai'});
             $("#dtList").datagrid("clearSelections");
             $('#dtList').datagrid('fixRowHeight');
         }
@@ -268,6 +343,42 @@
 
     function showApply(username, applyId) {
         parent.Open(applyId + "号申请_" + username, '/apply/showApply/' + applyId);
+    }
+
+    function inHospital(applyId, medicalRecordNo, patientId, medicalGroup) {
+        $("#medicalRecordNoOfWin").val(medicalRecordNo);
+        $("#applyIdOfWin").val(applyId);
+        $("#patientIdOfWin").val(patientId);
+        //判断入院情况（首次？需要评估方案?)
+        $.ajax({
+            type: 'POST',
+            url: "${ctx}/record/toHospitalCheck",//根据是否有医生码区分病人和医生权限
+            dataType: "json",
+            data: {"medicalRecordNo": medicalRecordNo},
+            async: false,
+            success: function (data) {
+                var medicalRecord = data.data;
+               if (data.message == "0") {
+                   $("#win").window("open");
+               } else if (data.message == "1") {
+                   $.messager.alert('提示', "本次入院需要评估治疗方案", 'info', function () {
+
+                       $("#group").combobox('disable');
+                       $('#group').combobox('setValue', medicalGroup);
+                       $("#win").window("open");
+                   });
+               } else {
+                   $("#treatmentPlan").textbox('disable');
+                   $("#treatmentTimes").textbox('disable');
+                   $("#treatmentTimes").textbox('setValue', medicalRecord.treatmentTimes);
+                   $("#treatmentPlan").textbox('setValue', medicalRecord.treatmentPlan);
+                   $("#group").combobox('disable');
+                   $('#group').combobox('setValue', medicalGroup);
+                   $("#win").window("open");
+               }
+            }
+        });
+
     }
 
     $.extend($.fn.validatebox.defaults.rules, {

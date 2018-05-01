@@ -48,6 +48,12 @@
                     <span>手机号：</span>
                     <input class="easyui-textbox" id="phoneNumber">
                 </c:if>
+                <span>就诊状态：</span>
+                <select editable="false" style="width: 120px" class="easyui-combobox" id="state">
+                    <option value="">全部</option>
+                    <option value="0">就诊过程中</option>
+                    <option value="1">结束治疗</option>
+                </select>
                 <span>就诊号：</span>
                 <input class="easyui-textbox" id="medicalRecordNo">
                 <a style="margin-left: 15px" id="search" href="javascript:void(0);" class="easyui-linkbutton"
@@ -80,6 +86,9 @@
         fitColumns: true,
         nowrap: true,
         queryParams: {
+            state: function () {
+                return $("#state").val();
+            },
             patientName: function () {
                 return $("#patientName").val()
             },
@@ -106,7 +115,7 @@
                 {
                     field: 'username',
                     title: '姓名',
-                    width: 30
+                    width: 20
                 },
                 {
                     field: 'sex',
@@ -171,7 +180,18 @@
                     title: '操作',
                     width: 50,
                     formatter: function (value, row, index) {
-                        return "<a class='editcls' class='easyui-linkbutton' onclick=\"showProcessList('" + row.id + "')\"></a>"
+                        var content = "<a class='easyui-linkbutton showProcess' onclick=\"showProcessList('" + row.id + "')\"></a>";
+                        <c:if test="${loginUser.athorization eq 3}">
+                        /*主任医师可以更新治疗方案*/
+                        content = content +
+                            "<a class='easyui-linkbutton modifyPlan' onclick=\"modifyPlan('" + row.id + "')\"></a>";
+                        </c:if>
+                        <c:if test="${loginUser.athorization eq 2}">
+                        /*治疗组医生可以标记患者离院 修改稿下次入院时间*/
+                        content = content + "<a class='easyui-linkbutton leave' onclick=\"leaveHospital('" + row.id + "')\"></a>" +
+                            "<a class='easyui-linkbutton nextTime' onclick=\"modifyNextTime('" + row.id + "')\"></a>";
+                        </c:if>
+                        return "<div style='white-space:pre-wrap;word-wrap:break-word;'>" + content + "</div>";
                     }
                 }
             ]
@@ -180,11 +200,25 @@
             $("td").each(function () {
                 $(this).attr("title", $(this).text());
             });
-            $('.editcls').linkbutton({text: '查看治疗过程', plain: true, iconCls: 'icon-dakai'});
+            $('.showProcess').linkbutton({text: '查看治疗过程', plain: true, iconCls: 'icon-dakai'});
+            $('.leave').linkbutton({text: '离院', plain: true, iconCls: 'icon-dakai'});
+            $('.modifyPlan').linkbutton({text: '更新方案', plain: true, iconCls: 'icon-dakai'});
             $("#dtList").datagrid("clearSelections");
             $('#dtList').datagrid('fixRowHeight');
         }
     })
+
+    function leaveHospital() {
+        //todo 记录下次入院时间 写入离院记录
+    }
+
+    function modifyPlan() {
+        //todo 更新治疗方案
+    }
+
+    function modifyNextTime() {
+        //todo 修改下次入院时间
+    }
 
     function showProcessList(medicalRecordNo) {
         parent.Open(medicalRecordNo + "号就诊过程", '/process/processList?medicalRecordNo=' + medicalRecordNo);

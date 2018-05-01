@@ -2,10 +2,7 @@ package com.study.cancer.controller;
 
 import com.github.pagehelper.PageInfo;
 import com.study.cancer.model.*;
-import com.study.cancer.service.ApplyService;
-import com.study.cancer.service.AttachmentService;
-import com.study.cancer.service.MedicalRecordService;
-import com.study.cancer.service.TreatmentProcessService;
+import com.study.cancer.service.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -34,6 +31,9 @@ public class ApplyController extends BaseController {
 
     @Resource
     TreatmentProcessService treatmentProcessService;
+
+    @Resource
+    MedicalGroupService medicalGroupService;
 
     @RequestMapping("/fillIn")
     public String fillIn(Model model) {
@@ -85,7 +85,13 @@ public class ApplyController extends BaseController {
     }
 
     @RequestMapping("/list")
-    public String ApplyList() {
+    public String ApplyList(Model model) {
+        if (getLoginUser().getAthorization().equals("3")) {
+            CommonResult groupList = medicalGroupService.getGroupList();
+            if (groupList.isSuccess()) {
+                model.addAttribute("medicalGroupList", groupList.getData());
+            }
+        }
         return "/all_apply_list";
     }
 
@@ -100,6 +106,7 @@ public class ApplyController extends BaseController {
         apply.setToHospitalDate(now);
         MedicalRecord medicalRecord = new MedicalRecord();
         medicalRecord.setPatientId(apply.getPatientId());
+        medicalRecord.setState("0");//就诊过程中
         medicalRecord.setIsInHospital("no");
         CommonResult recordResult = medicalRecordService.addRecord(medicalRecord);
         apply.setMedicalRecordNo((Integer) recordResult.getData());
@@ -210,6 +217,62 @@ public class ApplyController extends BaseController {
         apply.setState(ApplyStateConstant.WAIT_TO_CHECK_CONDITION);
         CommonResult result = applyService.modifyApply(apply);
         return result;
+    }
+
+    @RequestMapping("/inHospital")
+    @ResponseBody
+    public CommonResult inHospital(String group, String treatmentPlan, String applyId, String medicalRecordNo, String patientId, String treatmentTimes) {
+        CommonResult<Object> result = new CommonResult<>();
+        Apply apply = new Apply();
+        User patient = new User();
+        CommonResult recordData = medicalRecordService.getRecord(medicalRecordNo);
+        if (recordData.isSuccess()) {
+            MedicalRecord medicalRecord = (MedicalRecord) recordData.getData();
+            apply.setId(Integer.parseInt(applyId));
+            apply.setState(ApplyStateConstant.TO_HOSPITAL);
+            CommonResult modifyApplyData = applyService.modifyApply(apply);
+            if (!modifyApplyData.isSuccess()) {
+                return modifyApplyData;
+            }
+            medicalRecord.setId(Integer.parseInt(medicalRecordNo));
+            medicalRecord.setIsInHospital("yes");
+            if (treatmentTimes != null) {
+                if (Integer.parseInt(treatmentTimes) < medicalRecord.getToHospitalTimes() + 1) {
+                    result.setMessage("评估方案时间错误");
+                    return result;
+                }
+                medicalRecord.setTreatmentTimes(Integer.parseInt(treatmentTimes));
+            }
+            if (treatmentPlan != null) {
+                medicalRecord.setTreatmentPlan(treatmentPlan);
+            }
+            medicalRecord.setToHospitalTimes(medicalRecord.getToHospitalTimes() + 1);
+            if (group != null && !"".equals(group)) {
+                patient.setId(Integer.parseInt(patientId));
+                patient.setMedicalGroup(group);
+                CommonResult modifyUserData = loginService.modifyUserInfo(patient);
+                if (!modifyUserData.isSuccess()) {
+                    return modifyUserData;
+                }
+            }
+            CommonResult editRecordData = medicalRecordService.editRecord(medicalRecord);
+            if (editRecordData.isSuccess()) {
+                editRecordData.setMessage("入院成功");
+                TreatmentProcess treatmentProcess = new TreatmentProcess();
+                treatmentProcess.setDoctorAction("制定治疗方案：" + treatmentPlan);
+                treatmentProcess.setPatientAction("入院");
+                treatmentProcess.setMedicalRecordNo(medicalRecordNo);
+                treatmentProcess.setDoctorName(getLoginUser().getUsername());
+                treatmentProcessService.addProcess(treatmentProcess);
+                return editRecordData;
+            } else {
+                result.setMessage("入院失败");
+                return result;
+            }
+        } else {
+            result.setMessage("无治疗记录");
+            return result;
+        }
     }
 
 }

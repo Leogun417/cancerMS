@@ -233,7 +233,7 @@
                 str_to_date(#{applyEndDate},'%Y-%m-%d')
             </if>
             <if test="state != null">
-                AND state = #{state,jdbcType=VARCHAR}
+                AND t1.state = #{state,jdbcType=VARCHAR}
             </if>
             <if test="toHospitalStartDate != null">AND DATE_FORMAT(to_hospital_date, '%Y-%m-%d') &gt;=
                 str_to_date(#{toHospitalStartDate},'%Y-%m-%d')

@@ -297,7 +297,7 @@
                     width: 120,
                     formatter: function (value, row, index) {
                         var res;
-                        if (row.state == 0 || row.state == 1) {
+                        if (row.state < 3 && (row.state != 5 || row.state != 6)) {
                             res = '等待安排'
                         } else {
                             res = value;

@@ -28,4 +28,15 @@ public class TreatmentProcessController extends BaseController {
         CommonResult result = treatmentProcessService.showProcessList(page, rows, medicalRecordNo);
         return (PageInfo) result.getData();
     }
+
+    @RequestMapping("/showFileList")
+    @ResponseBody
+    public PageInfo showFileList(String processId, Integer page, Integer rows) {
+        CommonResult attachmentList = attachmentService.getAttachmentList(page, rows, null, null, processId);
+        if (attachmentList.isSuccess()) {
+            return (PageInfo) attachmentList.getData();
+        } else {
+            return null;
+        }
+    }
 }

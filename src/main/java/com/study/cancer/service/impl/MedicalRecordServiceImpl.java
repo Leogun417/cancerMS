@@ -22,6 +22,34 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
 
     @Resource
     ApplyMapper applyMapper;
+
+    @Override
+    public CommonResult editRecord(MedicalRecord medicalRecord) {
+        CommonResult<Object> result = new CommonResult<>();
+        int update = medicalRecordMapper.updateByPrimaryKeySelective(medicalRecord);
+        if (update > 0) {
+            result.setSuccess(true);
+            result.setMessage("更新记录成功");
+        } else {
+            result.setMessage("更新记录失败");
+        }
+        return result;
+    }
+
+    @Override
+    public CommonResult getRecord(String medicalRecordNo) {
+        CommonResult<Object> result = new CommonResult<>();
+        MedicalRecord medicalRecord = medicalRecordMapper.selectByPrimaryKey(Integer.parseInt(medicalRecordNo));
+        if (medicalRecord != null) {
+            result.setSuccess(true);
+            result.setMessage("获取就诊记录成功");
+            result.setData(medicalRecord);
+        } else {
+            result.setMessage("获取就诊记录失败");
+        }
+        return result;
+    }
+
     @Override
     public CommonResult addRecord(MedicalRecord medicalRecord) {
         CommonResult<Object> result = new CommonResult<>();
@@ -61,7 +89,7 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
     }
 
     @Override
-    public CommonResult showRecordList(int page, int rows, String patientName, String phoneNumber, String medicalRecordNo, String medicalGroup) {
+    public CommonResult showRecordList(int page, int rows, String patientName, String phoneNumber, String medicalRecordNo, String medicalGroup, String state) {
         PageHelper.startPage(page, rows);
         CommonResult<Object> result = new CommonResult<>();
         Map<Object, Object> map = new HashMap<>();
@@ -69,6 +97,7 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
         map.put("phoneNumber", phoneNumber);
         map.put("medicalRecordNo", medicalRecordNo);
         map.put("medicalGroup", medicalGroup);
+        map.put("state", state);
         List<MedicalRecordListVo> medicalRecordListVos = medicalRecordMapper.selectList(map);
         PageInfo<MedicalRecordListVo> medicalRecordListVoPageInfo = new PageInfo<>(medicalRecordListVos);
         if (medicalRecordListVos != null && medicalRecordListVos.size() > 0) {

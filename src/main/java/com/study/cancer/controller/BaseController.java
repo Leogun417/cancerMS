@@ -437,7 +437,7 @@ public class BaseController {
     /**
      * 文件下载
      *
-     * @param fileName
+     * @param attachmentId
      * @param request
      * @param response
      * @return
@@ -445,42 +445,42 @@ public class BaseController {
      */
     @ResponseBody
     @RequestMapping("/download")
-    public void download(String fileName, String medicalRecordNo, HttpServletRequest request,
+    public void download(String attachmentId, HttpServletRequest request,
                          HttpServletResponse response) throws IOException {
+        CommonResult attachmentData = attachmentService.getAttachment(attachmentId);
+        if (attachmentData.isSuccess()) {
+            Attachment attachment = (Attachment) attachmentData.getData();
+            String attachmentPath = attachment.getAttachmentPath();
+            String attachmentName = attachment.getAttachmentName();
+            // 处理下载文件时中文名称乱码
+            File file = new File(attachmentPath + File.separator + attachmentName);
+            response.reset();
+            response.setHeader("Content-Disposition",
+                    "attachment; filename=\"" + new String(attachmentName.getBytes("gbk"), "iso-8859-1") + "\"");
+            response.addHeader("Content-Length", "" + file.length());
+            response.setContentType("application/octet-stream;charset=UTF-8");
 
-        // 从配置文件中获取上传地址
-        Properties properties = loadFromFile("upload.properties");
-        String path = properties.getProperty("uploadUrl");
+            try {
+                InputStream inputStream = new FileInputStream(file);
 
-        // 处理下载文件时中文名称乱码
-        File file = new File(path + File.separator + medicalRecordNo + File.separator + fileName);
-        response.reset();
-        response.setHeader("Content-Disposition",
-                "attachment; filename=\"" + new String(fileName.getBytes("gbk"), "iso-8859-1") + "\"");
-        response.addHeader("Content-Length", "" + file.length());
-        response.setContentType("application/octet-stream;charset=UTF-8");
+                OutputStream os = response.getOutputStream();
+                byte[] b = new byte[2048];
+                int length;
+                while ((length = inputStream.read(b)) > 0) {
+                    os.write(b, 0, length);
+                }
 
-        try {
-            InputStream inputStream = new FileInputStream(
-                    new File(path + File.separator + medicalRecordNo + File.separator + fileName));
+                // 这里主要关闭。
+                os.close();
 
-            OutputStream os = response.getOutputStream();
-            byte[] b = new byte[2048];
-            int length;
-            while ((length = inputStream.read(b)) > 0) {
-                os.write(b, 0, length);
+                inputStream.close();
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-
-            // 这里主要关闭。
-            os.close();
-
-            inputStream.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+            // 返回值要注意，要不然就出现下面这句错误！
+            // java+getOutputStream() has already been called for this response
         }
-        // 返回值要注意，要不然就出现下面这句错误！
-        // java+getOutputStream() has already been called for this response
     }
 }

@@ -35,9 +35,12 @@ public class ApplyServiceImpl implements ApplyService {
         CommonResult<Object> result = new CommonResult<>();
         HashMap<Object, Object> resulDatatMap = new HashMap<>();
         List<Apply> oldApplys = applyMapper.selectByPatientId(apply.getPatientId());
-        if (oldApplys != null && oldApplys.size() > 0) {//0等待处理 1正在排队 2排队完成 3入院 4爽约
+        if (oldApplys != null && oldApplys.size() > 0) {
             for (Apply oldApply : oldApplys) {
-                if (!(oldApply.getState().equals("3") || oldApply.getState().equals("4"))) {
+                String state = oldApply.getState();
+                if (state.equals(ApplyStateConstant.WAIT_TO_CHECK_DATA)
+                        || state.equals(ApplyStateConstant.WAIT_TO_CHECK_CONDITION)
+                        || state.equals(ApplyStateConstant.LINE_UP)) {
                     result.setMessage("申请已提交过，请勿重复提交");
                     return result;
                 }

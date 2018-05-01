@@ -8,6 +8,7 @@ import com.study.cancer.model.CommonResult;
 import java.util.Map;
 
 public interface AttachmentService {
+    CommonResult getAttachment(String attachmentId);
     CommonResult addAttachment(Attachment attachment);
     CommonResult getAttachmentList(Integer page, Integer rows, String medicalRecordNo, String applyId, String treatmentProcessId);
 }

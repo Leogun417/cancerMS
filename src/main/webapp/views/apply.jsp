@@ -212,8 +212,9 @@
                                 style="margin-left: 15px;">通过审核
                         </button>
                     </c:if>
-                    <%--主任医师级才能评定--%>
-                    <c:if test="${applyInfo.state eq 1 and loginUser.athorization eq 3}">
+                    <%--主任医师级才能评定，或患者二次入院时，治疗组医生评定自己组内患者--%>
+                    <c:if test="${(applyInfo.state eq 1 and loginUser.athorization eq 3)
+                     || (applyInfo.medicalGroup eq loginUser.medicalGroup)}">
                         <button onclick="openJuge()" type="button" class="btn btn-primary"
                                 style="margin-left: 15px;">危重度评定
                         </button>
@@ -421,20 +422,23 @@
                     title: '操作',
                     width: 40,
                     formatter: function (value, row, index) {
-                        return "<a class='down' href='javascript:void(0);' class='easyui-linkbutton' onclick=\"downFile('" + row.attachmentName + "',${applyInfo.medicalRecordNo})\"></a>"
+                        return "<a class='down' href='javascript:void(0);' class='easyui-linkbutton' onclick=\"downFile('" + row.id + "')\"></a>"
                     }
                 }
             ]
         ],
         onLoadSuccess: function (data) {
+            $("td").each(function () {
+                $(this).attr("title", $(this).text());
+            });
             $('.down').linkbutton({text: '下载', plain: true, iconCls: 'icon-xiazai'});
             $("#dtList").datagrid("clearSelections");
             $('#dtList').datagrid('fixRowHeight');
         }
     })
 
-    function downFile(attachmentName, medicalRecordNo) {
-        window.location.href = "${ctx}/download?fileName=" + attachmentName + "&medicalRecordNo=" + medicalRecordNo;
+    function downFile(attachmentId) {
+        window.location.href = "${ctx}/download?attachmentId=" + attachmentId;
     }
 
     $(function () {

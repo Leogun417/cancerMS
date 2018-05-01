@@ -23,6 +23,20 @@ public class AttachmentServiceImpl implements AttachmentService {
     AttachmentMapper attachmentMapper;
 
     @Override
+    public CommonResult getAttachment(String attachmentId) {
+        CommonResult<Object> result = new CommonResult<>();
+        Attachment attachment = attachmentMapper.selectByPrimaryKey(Integer.parseInt(attachmentId));
+        if (attachment != null) {
+            result.setData(attachment);
+            result.setSuccess(true);
+            result.setMessage("获取附件成功");
+        } else {
+            result.setMessage("获取附件失败");
+        }
+        return result;
+    }
+
+    @Override
     public CommonResult addAttachment(Attachment attachment) {
         CommonResult<Object> result = new CommonResult<>();
         int insert = attachmentMapper.insert(attachment);
@@ -42,7 +56,7 @@ public class AttachmentServiceImpl implements AttachmentService {
         CommonResult<Object> result = new CommonResult<>();
         HashMap<Object, Object> map = new HashMap<>();
         map.put("medicalRecordNo", medicalRecordNo);
-        map.put("applyId", applyId);
+        map.put("applicationId", applyId);
         map.put("treatmentProcessId", treatmentProcessId);
         List<Attachment> attachments = attachmentMapper.selectList(map);
         if (attachments != null && attachments.size() > 0) {
