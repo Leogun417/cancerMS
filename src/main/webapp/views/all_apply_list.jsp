@@ -4,7 +4,13 @@
 <html>
 <head>
     <title>肿瘤患者化疗管理系统-申请查看</title>
-
+    <link rel="stylesheet" href="${ctxStatic}/js/bootstrap/css/bootstrap.min.css">
+    <link href="${ctxStatic}/themes/easyui/easyui.css" media="screen"
+          rel="stylesheet" type="text/css"/>
+    <link href="${ctxStatic}/themes/easyui/easyui_default.css"
+          media="screen" rel="stylesheet" type="text/css">
+    <link href="${ctxStatic}/themes/easyui/icon.css" media="screen"
+          media="screen" rel="stylesheet" type="text/css">
     <style type="text/css">
         input {
             height: 25px;
@@ -43,13 +49,6 @@
             margin-left: 15px;
         }
     </style>
-    <link rel="stylesheet" href="${ctxStatic}/js/bootstrap/css/bootstrap.min.css">
-    <link href="${ctxStatic}/themes/easyui/easyui.css" media="screen"
-          rel="stylesheet" type="text/css"/>
-    <link href="${ctxStatic}/themes/easyui/easyui_default.css"
-          media="screen" rel="stylesheet" type="text/css">
-    <link href="${ctxStatic}/themes/easyui/icon.css" media="screen"
-          media="screen" rel="stylesheet" type="text/css">
 </head>
 
 <body style="background-color: #f2f2f2">
@@ -114,19 +113,19 @@
             </div>
         </div>
         <div class="cancer-group row">
-            <label class="pull-left label-lg"><span>*</span>治疗方案:</label>
+            <label class="pull-left label-lg"><span>*</span>治疗方案:　</label>
             <div>
                 <input required="true" name="treatmentPlan" class="easyui-textbox row" style="height: 25px" id="treatmentPlan">
             </div>
         </div>
         <div class="cancer-group row">
-            <label class="pull-left label-lg"><span>*</span>何时进行方案评估:</label>
+            <label class="pull-left label-lg"><span>*</span>方案评估:　</label>
             <div>
                 第<input required="true" name="treatmentTimes" class="easyui-textbox row" style="height: 25px" id="treatmentTimes">次入院
             </div>
         </div>
         <div class="row">
-            <input type="submit" class="btn btn-primary" value="确认"/>
+            <input type="submit" style="background-color: #0984ff;color: white" class="easyui-linkbutton" value="确认"/>
         </div>
     </form>
 </div>

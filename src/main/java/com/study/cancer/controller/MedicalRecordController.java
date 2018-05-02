@@ -1,20 +1,30 @@
 package com.study.cancer.controller;
 
 import com.github.pagehelper.PageInfo;
-import com.study.cancer.model.CommonResult;
-import com.study.cancer.model.MedicalRecord;
+import com.study.cancer.model.*;
+import com.study.cancer.service.LeaveService;
 import com.study.cancer.service.MedicalRecordService;
+import com.study.cancer.service.TreatmentProcessService;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.annotation.Resource;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 @Controller
 @RequestMapping(value = "/record")
 public class MedicalRecordController extends BaseController {
     @Resource
     MedicalRecordService medicalRecordService;
+
+    @Resource
+    LeaveService leaveService;
+
+    @Resource
+    TreatmentProcessService treatmentProcessService;
 
     @RequestMapping("/recordList")
     public String recordList() {
@@ -71,6 +81,54 @@ public class MedicalRecordController extends BaseController {
         } else {
             return recordResult;
         }
+    }
+
+    @RequestMapping("/leave")
+    @ResponseBody
+    public String leave(String state, String medicalRecordNo, String nextToHospitalDate, String leucocyteConcentration, String neutrophilConcentration) {
+        if ("0".equals(state)) {
+            LeaveData leaveData = new LeaveData();
+            leaveData.setLeucocyteConcentration(leucocyteConcentration);
+            leaveData.setNeutrophilConcentration(neutrophilConcentration);
+            leaveData.setMedicalRecordNo(medicalRecordNo);
+            CommonResult leaveDateResult = leaveService.addLeaveData(leaveData);
+            if (!leaveDateResult.isSuccess()) {
+                return leaveDateResult.getMessage();
+            }
+            LeaveRecord leaveRecord = new LeaveRecord();
+            leaveRecord.setMedicalRecordNo(medicalRecordNo);
+            leaveRecord.setType(state);
+            CommonResult leaveRecordResult = leaveService.addLeaveRecord(leaveRecord);
+            if (!leaveRecordResult.isSuccess()) {
+                return leaveRecordResult.getMessage();
+            }
+        }
+        TreatmentProcess treatmentProcess = new TreatmentProcess();
+        treatmentProcess.setDoctorName(getLoginUser().getUsername());
+        treatmentProcess.setMedicalRecordNo(medicalRecordNo);
+        treatmentProcess.setPatientAction("离院");
+        treatmentProcess.setDoctorAction("审核离院");
+        CommonResult processResult = treatmentProcessService.addProcess(treatmentProcess);
+        if (!processResult.isSuccess()) {
+            return processResult.getMessage();
+        }
+        MedicalRecord medicalRecord = new MedicalRecord();
+        medicalRecord.setState(state);
+        medicalRecord.setId(Integer.parseInt(medicalRecordNo));
+        medicalRecord.setIsInHospital("no");
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        Date nextDate = null;
+        try {
+            nextDate = simpleDateFormat.parse(nextToHospitalDate);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        medicalRecord.setNextToHospitalDate(nextDate);
+        CommonResult result = medicalRecordService.editRecord(medicalRecord);
+        if (result.isSuccess()) {
+            return "离院成功";
+        }
+        return "离院失败";
     }
 
 }
