@@ -1,6 +1,7 @@
 package com.study.cancer.model;
 
 public class SMSConstant {
+    public static final String NOTICE_PATIENT_SUBMIT_AGAIN_APPLY = "SMS_133978286";//通知医生病人指标危险
     public static final String NOTICE_DOCTOR_CONTACT_PATIENT = "SMS_133977217";//通知医生病人指标危险
     public static final String NOTICE_PATIENT_CONTACT_DOCTOR = "SMS_133962122";//通知病人联系医生
     public static final String RECEIPT_TO_PATIENT = "SMS_129740757";//对病人的回执

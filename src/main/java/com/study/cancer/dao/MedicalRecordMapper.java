@@ -56,4 +56,8 @@ public interface MedicalRecordMapper {
     int updateByPrimaryKey(MedicalRecord record);
 
     List<MedicalRecordListVo> selectList(Map map);
+
+
+
+    List<MedicalRecordListVo> selectWillToHospital();
 }

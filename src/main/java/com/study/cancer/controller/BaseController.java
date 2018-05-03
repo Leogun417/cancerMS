@@ -179,6 +179,9 @@ public class BaseController {
             request.setTemplateCode(SMSConstant.NOTICE_PATIENT_CONTACT_DOCTOR);
             request.setTemplateParam("{\"doctorName\":" + map.get("doctorName") + "}");
             request.setTemplateParam("{\"doctorPhone\":" + map.get("doctorPhone") + "}");
+        } else if (type.equals(SMSConstant.NOTICE_PATIENT_SUBMIT_AGAIN_APPLY)) {
+            //必填:短信模板-可在短信控制台中找到
+            request.setTemplateCode(SMSConstant.NOTICE_PATIENT_SUBMIT_AGAIN_APPLY);
         }
         //请求失败这里会抛ClientException异常
         /*SendSmsResponse sendSmsResponse = acsClient.getAcsResponse(request);

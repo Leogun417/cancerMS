@@ -8,6 +8,7 @@ import com.study.cancer.dao.UserMapper;
 import com.study.cancer.model.*;
 import com.study.cancer.service.ApplyService;
 import com.study.cancer.service.LeaveService;
+import com.study.cancer.service.MedicalRecordService;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -30,6 +31,9 @@ public class AutoTask {
 
     @Resource
     LeaveService leaveService;
+
+    @Resource
+    MedicalRecordService medicalRecordService;
 
     @Resource
     UserMapper userMapper;
@@ -74,11 +78,18 @@ public class AutoTask {
         System.out.println("定时任务");
     }
 
+    /**
+     * 自动安排入院
+     */
     @Scheduled(cron = "0 15 0/1 * * ? ")
     public void ArrangeInHospital() {
         applyService.arrange();
     }
 
+    /**
+     * 自动检查患者提交的离院数据
+     * @throws ClientException
+     */
     @Scheduled(cron = "0 10 0 * * ? ")
     public void checkLeavePatientData() throws ClientException {
         CommonResult result = leaveService.checkData();
@@ -129,6 +140,23 @@ public class AutoTask {
                 suggestion = configWithBLOBs.getNeutrophilSuggestion();
             }
             baseController.sendMsg(medicalRecordListVo.getPatientId(), suggestion + "," + configWithBLOBs.getLeucocyteSuggestion(), TabData.SHOW_MEDICAL_RECORD, TabData.tabMap.get(TabData.SHOW_MEDICAL_RECORD), "0", "0", "系统消息");
+        }
+    }
+
+    /**
+     * 自动检查近期（3天内）要入院的患者
+     */
+    @Scheduled(cron = "0 58 16 * * ? ")
+    public void checkToHospital() throws ClientException {
+        CommonResult result = medicalRecordService.checkWillToHospital();
+        if (result.isSuccess()) {
+            List<MedicalRecordListVo> willToHospitalList = (List<MedicalRecordListVo>) result.getData();
+            for (MedicalRecordListVo medicalRecord : willToHospitalList) {
+                Integer patientId = medicalRecord.getPatientId();
+                String patientPhone = medicalRecord.getPhoneNumber();
+                baseController.sendSMS(patientPhone, null, SMSConstant.NOTICE_PATIENT_SUBMIT_AGAIN_APPLY);
+                baseController.sendMsg(patientId, "近期将再次入院，请尽快提交二次入院申请", TabData.SHOW_MEDICAL_RECORD, TabData.tabMap.get(TabData.SHOW_MEDICAL_RECORD), "0", "0", "系统消息");
+            }
         }
     }
 }

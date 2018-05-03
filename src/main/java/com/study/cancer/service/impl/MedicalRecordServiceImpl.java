@@ -28,6 +28,20 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
     BedMapper bedMapper;
 
     @Override
+    public CommonResult checkWillToHospital() {
+        CommonResult<Object> result = new CommonResult<>();
+        List<MedicalRecordListVo> willToHospitalList = medicalRecordMapper.selectWillToHospital();
+        if (willToHospitalList != null && willToHospitalList.size() > 0) {
+            result.setSuccess(true);
+            result.setMessage("成功获取将要入院的记录");
+            result.setData(willToHospitalList);
+        } else {
+            result.setMessage("没有将要入院的记录");
+        }
+        return result;
+    }
+
+    @Override
     public CommonResult resetBed(String patientId) {
         CommonResult<Object> result = new CommonResult<>();
         Bed bed = bedMapper.selectByPatient(patientId);

@@ -353,6 +353,7 @@
         },
         success: function (data) {
             $.messager.alert('提示', data, 'info', function () {
+                window.location.reload();
                 $("#win").window("close");
             });
         }

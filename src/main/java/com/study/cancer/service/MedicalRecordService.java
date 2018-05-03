@@ -6,6 +6,7 @@ import com.study.cancer.model.LeaveRecord;
 import com.study.cancer.model.MedicalRecord;
 
 public interface MedicalRecordService {
+    CommonResult checkWillToHospital();
     CommonResult resetBed(String patientId);
     CommonResult editRecord(MedicalRecord medicalRecord);
     CommonResult getRecord(String medicalRecordNo);
