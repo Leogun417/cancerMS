@@ -36,7 +36,10 @@ public class ApplyController extends BaseController {
     MedicalGroupService medicalGroupService;
 
     @RequestMapping("/fillIn")
-    public String fillIn(Model model) {
+    public String fillIn(Model model, String medicalRecordNo) {
+        if (medicalRecordNo != null && !"".equals(medicalRecordNo)) {
+            model.addAttribute("medicalRecordNo", medicalRecordNo);
+        }
         model.addAttribute("edit", "edit");
         return "/apply";
     }
@@ -85,7 +88,10 @@ public class ApplyController extends BaseController {
     }
 
     @RequestMapping("/list")
-    public String ApplyList(Model model) {
+    public String ApplyList(Model model, String again) {
+        if (again != null && !"".equals(again)) {
+            model.addAttribute("again", "again");
+        }
         if (getLoginUser().getAthorization().equals("3")) {
             CommonResult groupList = medicalGroupService.getGroupList();
             if (groupList.isSuccess()) {
@@ -97,24 +103,34 @@ public class ApplyController extends BaseController {
 
     @RequestMapping(value = "/add", method = RequestMethod.POST)
     @ResponseBody
-    public String add(Apply apply, HttpServletRequest request) {
+    public String add(Apply apply, String medicalRecordNo, HttpServletRequest request) {
         Integer patientId = getLoginUser().getId();
         Date now = new Date();
         apply.setPatientId(patientId);
         apply.setState(ApplyStateConstant.WAIT_TO_CHECK_DATA);//0等待材料审核 1等待病情评估 2正在排队 3排队完成 4入院 5爽约）
         apply.setApplyDate(now);
         apply.setToHospitalDate(now);
-        MedicalRecord medicalRecord = new MedicalRecord();
-        medicalRecord.setPatientId(apply.getPatientId());
-        medicalRecord.setState("0");//就诊过程中
-        medicalRecord.setIsInHospital("no");
-        CommonResult recordResult = medicalRecordService.addRecord(medicalRecord);
-        apply.setMedicalRecordNo((Integer) recordResult.getData());
+        if (medicalRecordNo != null && !"".equals(medicalRecordNo)) {
+            apply.setMedicalRecordNo(Integer.parseInt(medicalRecordNo));
+            apply.setIsVisible("0");
+            apply.setIsAgain("1");
+        } else {
+            apply.setIsAgain("0");
+            apply.setIsVisible("1");
+            MedicalRecord medicalRecord = new MedicalRecord();
+            medicalRecord.setPatientId(apply.getPatientId());
+            medicalRecord.setState("0");//就诊过程中
+            medicalRecord.setIsInHospital("no");
+            CommonResult recordResult = medicalRecordService.addRecord(medicalRecord);
+            medicalRecordNo = "" + recordResult.getData();
+            apply.setMedicalRecordNo(Integer.parseInt(medicalRecordNo));
+        }
+
         CommonResult result = applyService.addApply(apply);
         if (result.isSuccess()) {
             try {
                 //此时的request为DefautMultipartHttpServletRequest而不是单纯的HttpServletRequest，否则无法转化为MultipartHttpServletRequest
-                CommonResult uploadResult = uploadMore(request, (Integer) recordResult.getData(), (Integer) ((Map) result.getData()).get("applyId"), "" + ((Map) result.getData()).get("treatmentProcessId"));
+                CommonResult uploadResult = uploadMore(request, Integer.parseInt(medicalRecordNo), (Integer) ((Map) result.getData()).get("applyId"), "" + ((Map) result.getData()).get("treatmentProcessId"));
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -189,7 +205,8 @@ public class ApplyController extends BaseController {
 
     @RequestMapping("/getApplyList")
     @ResponseBody
-    public PageInfo getApplyList(int page, int rows, String applyStartDate, String applyEndDate, String state, String patientName, Integer medicalRecordNo) {
+    public PageInfo getApplyList(int page, int rows, String applyStartDate, String applyEndDate, String state, String patientName, Integer medicalRecordNo, String times) {
+        String medicalGroup = null;
         if ("".equals(applyEndDate)) {
             applyEndDate = null;
         }
@@ -205,7 +222,10 @@ public class ApplyController extends BaseController {
         if ("".equals(medicalRecordNo)) {
             medicalRecordNo = null;
         }
-        PageInfo applyList = applyService.getList(page, rows, null, applyStartDate, applyEndDate, state, patientName, medicalRecordNo);
+        if ("".equals(times) || times == null) {
+            medicalGroup = getLoginUser().getMedicalGroup();
+        }
+        PageInfo applyList = applyService.getList(page, rows, null, applyStartDate, applyEndDate, state, patientName, medicalRecordNo, times, medicalGroup);
         return applyList;
     }
 

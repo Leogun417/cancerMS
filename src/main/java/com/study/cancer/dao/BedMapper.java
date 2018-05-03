@@ -54,4 +54,6 @@ public interface BedMapper {
     int updateByPrimaryKey(Bed record);
 
     List<Bed> selectNumByState(String state);
+
+    Bed selectByPatient(String patientId);
 }

@@ -7,4 +7,6 @@ import com.study.cancer.model.LeaveRecord;
 public interface LeaveService {
     CommonResult addLeaveRecord(LeaveRecord leaveRecord);
     CommonResult addLeaveData(LeaveData leaveData);
+    CommonResult checkData();
+    CommonResult getLeaveDataConfig();
 }

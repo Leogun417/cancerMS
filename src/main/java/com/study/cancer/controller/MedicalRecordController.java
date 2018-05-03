@@ -86,6 +86,11 @@ public class MedicalRecordController extends BaseController {
     @RequestMapping("/leave")
     @ResponseBody
     public String leave(String state, String medicalRecordNo, String nextToHospitalDate, String leucocyteConcentration, String neutrophilConcentration) {
+        CommonResult recordData = medicalRecordService.getRecord(medicalRecordNo);
+        MedicalRecord record = null;
+        if (recordData.isSuccess()) {
+            record = (MedicalRecord) recordData.getData();
+        }
         if ("0".equals(state)) {
             LeaveData leaveData = new LeaveData();
             leaveData.setLeucocyteConcentration(leucocyteConcentration);
@@ -102,7 +107,14 @@ public class MedicalRecordController extends BaseController {
             if (!leaveRecordResult.isSuccess()) {
                 return leaveRecordResult.getMessage();
             }
+        } else {//完成治疗，出院
+                User user = new User();
+                user.setId(record.getPatientId());
+                user.setMedicalGroup(null);
+                userMapper.updateByPrimaryKeySelective(user);
+
         }
+        medicalRecordService.resetBed("" + record.getPatientId());//重置床位
         TreatmentProcess treatmentProcess = new TreatmentProcess();
         treatmentProcess.setDoctorName(getLoginUser().getUsername());
         treatmentProcess.setMedicalRecordNo(medicalRecordNo);
@@ -129,6 +141,17 @@ public class MedicalRecordController extends BaseController {
             return "离院成功";
         }
         return "离院失败";
+    }
+
+    @RequestMapping("/leaveData")
+    @ResponseBody
+    public String leaveData(String medicalRecordNo, String leucocyteConcentration, String neutrophilConcentration) {
+        LeaveData leaveData = new LeaveData();
+        leaveData.setLeucocyteConcentration(leucocyteConcentration);
+        leaveData.setNeutrophilConcentration(neutrophilConcentration);
+        leaveData.setMedicalRecordNo(medicalRecordNo);
+        CommonResult leaveDateResult = leaveService.addLeaveData(leaveData);
+        return leaveDateResult.getMessage();
     }
 
 }

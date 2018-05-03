@@ -89,18 +89,17 @@
         <input type="hidden" name="medicalRecordNo" id="medicalRecordNoOfWin"/>
         <div class="cancer-group row">
             <label class="pull-left label-lg"><span>*</span>就诊状态:　　　</label>
-            <div>
-                <select id="stateOfWin" data-options="validType:'selectValidate[\'#stateOfWin\'] '" name="state"
-                        editable="false" style="height:25px;width: 120px;margin-bottom: 10px"
-                        class="easyui-combobox row">
-                    <option value="">请选择</option>
-                    <option value="0">继续治疗</option>
-                    <option value="1">完成出院</option>
-                </select>
-            </div>
+
+            <select id="stateOfWin" data-options="validType:'selectValidate[\'#stateOfWin\'] '" name="state"
+                    editable="false" style="height:25px;width: 120px;margin-bottom: 10px"
+                    class="easyui-combobox row">
+                <option value="">请选择</option>
+                <option value="0">继续治疗</option>
+                <option value="1">完成出院</option>
+            </select>
         </div>
         <div id="continueDiv">
-            <div class="cancer-group row">
+            <div class="cancer-group row" id="nextDateDiv">
                 <label class="pull-left label-lg"><span>*</span>下次入院时间:　</label>
                 <div>
                     <input required="true" class="easyui-textbox" id="nextToHospitalDate" name="nextToHospitalDate">
@@ -127,6 +126,30 @@
         </div>
     </form>
 </div>
+<div id="win2" class="easyui-window userInfo" closed="true" title="离院"
+     style="display:none;width:400px;height:230px;">
+    <form id="leaveDataForm" style="margin-top: 15px;margin-left: 10px">
+        <input type="hidden" name="medicalRecordNo" id="medicalRecordNoOfWin2"/>
+        <div class="cancer-group row">
+            <label class="pull-left label-lg"><span>*</span>白细胞水平:　　</label>
+            <div>
+                <input required="true" name="leucocyteConcentration" class="easyui-textbox row" style="height: 25px"
+                       id="leaveLeucocyteConcentration">
+            </div>
+        </div>
+        <div class="cancer-group row">
+            <label class="pull-left label-lg"><span>*</span>中性粒细胞水平:</label>
+            <div>
+                <input required="true" name="neutrophilConcentration" class="easyui-textbox row"
+                       style="height: 25px"
+                       id="leaveNeutrophilConcentration">
+            </div>
+        </div>
+        <div class="row">
+            <input type="submit" style="background-color: #0984ff;color: white" class="easyui-linkbutton" value="确认"/>
+        </div>
+    </form>
+</div>
 <script src="${ctxStatic}/js/jquery/jQuery-2.2.0.min.js"
         type="text/javascript" charset="UTF-8"></script>
 <script src="${ctxStatic}/js/easyui/jquery.easyui.min.js"
@@ -139,7 +162,7 @@
         $('#dtList').datagrid('reload');
     });
     $("#stateOfWin").combobox({
-        onSelect: function(record){
+        onSelect: function (record) {
             if (record.value == "1") {
                 $("#continueDiv").hide();
             } else {
@@ -250,17 +273,17 @@
                     }
                 },
                 {
-                field: 'isInHospital',
-                title: '是否在院',
-                width: 30,
-                formatter: function (value, row, index) {
-                    if (value == "no") {
-                        return "已离院";
-                    } else {
-                        return "在院";
+                    field: 'isInHospital',
+                    title: '是否在院',
+                    width: 30,
+                    formatter: function (value, row, index) {
+                        if (value == "no") {
+                            return "已离院";
+                        } else {
+                            return "在院";
+                        }
                     }
-                }
-            },
+                },
                 {
                     field: 'action',
                     title: '操作',
@@ -275,6 +298,12 @@
                             content = content + "<a class='easyui-linkbutton nextTimecls' onclick=\"modifyNextTime('" + row.id + "')\"></a>";
                         }
                         </c:if>
+                        <c:if test="${loginUser.athorization eq 1}">
+                        if (row.isInHospital == "no" && row.state == "0") {
+                            content = content + "<a class='easyui-linkbutton leavedatacls' onclick=\"submitLeaveData('" + row.id + "')\"></a>" +
+                                "<a class='easyui-linkbutton againcls' onclick=\"againToHospital('" + row.id + "')\"></a>";
+                        }
+                        </c:if>
                         return "<div style='white-space:pre-wrap;word-wrap:break-word;'>" + content + "</div>";
                     }
                 }
@@ -287,6 +316,8 @@
             $('.showProcesscls').linkbutton({text: '查看治疗过程', plain: true, iconCls: 'icon-dakai'});
             $('.nextTimecls').linkbutton({text: '下次入院时间', plain: true, iconCls: 'icon-dakai'});
             $('.leavecls').linkbutton({text: '离院', plain: true, iconCls: 'icon-dakai'});
+            $('.leavedatacls').linkbutton({text: '提交材料', plain: true, iconCls: 'icon-dakai'});
+            $('.againcls').linkbutton({text: '二次入院申请', plain: true, iconCls: 'icon-dakai'});
             $("#dtList").datagrid("clearSelections");
             $('#dtList').datagrid('fixRowHeight');
         }
@@ -327,6 +358,27 @@
         }
     });
 
+    $('#leaveDataForm').form({
+        url: "${ctx}/record/leaveData",
+        onSubmit: function () {
+            return $(this).form('validate');
+        },
+        success: function (data) {
+            $.messager.alert('提示', data, 'info', function () {
+                $("#win2").window("close");
+            });
+        }
+    });
+
+    function againToHospital(medicalRecord) {
+        parent.Open("提交二次入院申请", '/apply/fillIn?medicalRecordNo=' + medicalRecord);
+    }
+
+    function submitLeaveData(medicalRecord) {
+        $("#medicalRecordNoOfWin2").val(medicalRecord);
+        $("#win2").window("open");
+    }
+
     function leaveHospital(medicalRecordNo) {
         $("#medicalRecordNoOfWin").val(medicalRecordNo);
         $("#win").window("open");
@@ -339,8 +391,6 @@
     function showProcessList(medicalRecordNo) {
         parent.Open(medicalRecordNo + "号就诊过程", '/process/processList?medicalRecordNo=' + medicalRecordNo);
     }
-
-
 
 
     $.extend($.fn.validatebox.defaults.rules, {

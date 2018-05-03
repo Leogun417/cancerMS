@@ -102,7 +102,8 @@
         <div class="cancer-group row">
             <label class="pull-left label-lg"><span>*</span>制定治疗组:</label>
             <div>
-                <select id="group" data-options="validType:'selectValidate[\'#group\'] '" name="group" editable="false" style="height:25px;width: 100px;margin-bottom: 10px" class="easyui-combobox row">
+                <select id="group" data-options="validType:'selectValidate[\'#group\'] '" name="group" editable="false"
+                        style="height:25px;width: 100px;margin-bottom: 10px" class="easyui-combobox row">
                     <option value="">请选择</option>
                     <c:if test="${not empty medicalGroupList}">
                         <c:forEach items="${medicalGroupList}" var="group">
@@ -115,13 +116,15 @@
         <div class="cancer-group row">
             <label class="pull-left label-lg"><span>*</span>治疗方案:　</label>
             <div>
-                <input required="true" name="treatmentPlan" class="easyui-textbox row" style="height: 25px" id="treatmentPlan">
+                <input required="true" name="treatmentPlan" class="easyui-textbox row" style="height: 25px"
+                       id="treatmentPlan">
             </div>
         </div>
         <div class="cancer-group row">
             <label class="pull-left label-lg"><span>*</span>方案评估:　</label>
             <div>
-                第<input required="true" name="treatmentTimes" class="easyui-textbox row" style="height: 25px" id="treatmentTimes">次入院
+                第<input required="true" name="treatmentTimes" class="easyui-textbox row" style="height: 25px"
+                        id="treatmentTimes">次入院
             </div>
         </div>
         <div class="row">
@@ -146,7 +149,7 @@
             return $(this).form('validate');
         },
         success: function (data) {
-            var data = eval ("(" + data + ")");
+            var data = eval("(" + data + ")");
             var message = data.message;
             $.messager.alert('提示', data.message, 'info', function () {
                 $("#win").window("close");
@@ -205,7 +208,12 @@
         }
     });
     $('#dtList').datagrid({
+        <c:if test="${not empty again}">
         url: '${ctx}/apply/getApplyList',
+        </c:if>
+        <c:if test="${empty again}">
+        url: '${ctx}/apply/getApplyList?times=0',
+        </c:if>
         idField: 'id',
         title: '',
         fit: true,
@@ -357,24 +365,25 @@
             async: false,
             success: function (data) {
                 var medicalRecord = data.data;
-               if (data.message == "0") {
-                   $("#win").window("open");
-               } else if (data.message == "1") {
-                   $.messager.alert('提示', "本次入院需要评估治疗方案", 'info', function () {
+                if (data.message == "0") {
+                    $("#win").window("open");
+                } else if (data.message == "1") {
+                    $.messager.alert('提示', "本次入院需要评估治疗方案", 'info', function () {
 
-                       $("#group").combobox('disable');
-                       $('#group').combobox('setValue', medicalGroup);
-                       $("#win").window("open");
-                   });
-               } else {
-                   $("#treatmentPlan").textbox('disable');
-                   $("#treatmentTimes").textbox('disable');
-                   $("#treatmentTimes").textbox('setValue', medicalRecord.treatmentTimes);
-                   $("#treatmentPlan").textbox('setValue', medicalRecord.treatmentPlan);
-                   $("#group").combobox('disable');
-                   $('#group').combobox('setValue', medicalGroup);
-                   $("#win").window("open");
-               }
+                        $("#group").combobox('disable');
+
+                        $('#group').combobox('setValue', medicalGroup);
+                        $("#win").window("open");
+                    });
+                } else {
+                    $("#treatmentPlan").textbox('disable');
+                    $("#treatmentTimes").textbox('disable');
+                    $("#treatmentTimes").textbox('setValue', medicalRecord.treatmentTimes);
+                    $("#treatmentPlan").textbox('setValue', medicalRecord.treatmentPlan);
+                    $("#group").combobox('disable');
+                    $('#group').combobox('setValue', medicalGroup);
+                    $("#win").window("open");
+                }
             }
         });
 

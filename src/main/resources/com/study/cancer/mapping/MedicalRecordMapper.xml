@@ -16,7 +16,7 @@
         <result column="treatment_plan" jdbcType="VARCHAR" property="treatmentPlan"/>
         <result column="treatment_times" jdbcType="INTEGER" property="treatmentTimes"/>
         <result column="to_hospital_times" jdbcType="INTEGER" property="toHospitalTimes"/>
-        <result column="break_times" jdbcType="INTEGER" property="breakTimes"/>
+        <result column="state" jdbcType="VARCHAR" property="state"/>
     </resultMap>
     <sql id="Base_Column_List">
         <!--
@@ -25,7 +25,7 @@
           This element was generated on Fri Apr 27 14:46:40 CST 2018.
         -->
         id, patient_id, first_in_hospital_date, severity, is_in_hospital, next_to_hospital_date,
-        treatment_plan, treatment_times, to_hospital_times, break_times, state
+        treatment_plan, treatment_times, to_hospital_times,  state
     </sql>
     <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
         <!--
@@ -59,11 +59,11 @@
         insert into medical_record (id, patient_id, first_in_hospital_date,
         severity, is_in_hospital, next_to_hospital_date,
         treatment_plan, treatment_times, to_hospital_times,
-        break_times)
+         state)
         values (#{id,jdbcType=INTEGER}, #{patientId,jdbcType=INTEGER}, #{firstInHospitalDate,jdbcType=TIMESTAMP},
         #{severity,jdbcType=VARCHAR}, #{isInHospital,jdbcType=VARCHAR}, #{nextToHospitalDate,jdbcType=TIMESTAMP},
         #{treatmentPlan,jdbcType=VARCHAR}, #{treatmentTimes,jdbcType=INTEGER}, #{toHospitalTimes,jdbcType=INTEGER},
-        #{breakTimes,jdbcType=INTEGER})
+         #{state,jdbcType=VARCHAR})
     </insert>
     <insert id="insertSelective" useGeneratedKeys="true" parameterType="com.study.cancer.model.MedicalRecord">
         <!--
@@ -104,7 +104,10 @@
                 to_hospital_times,
             </if>
             <if test="breakTimes != null">
-                break_times,
+                
+            </if>
+            <if test="state != null">
+                state,
             </if>
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
@@ -136,7 +139,10 @@
                 #{toHospitalTimes,jdbcType=INTEGER},
             </if>
             <if test="breakTimes != null">
-                #{breakTimes,jdbcType=INTEGER},
+                
+            </if>
+            <if test="state != null">
+                #{state,jdbcType=VARCHAR},
             </if>
         </trim>
     </insert>
@@ -172,8 +178,8 @@
             <if test="toHospitalTimes != null">
                 to_hospital_times = #{toHospitalTimes,jdbcType=INTEGER},
             </if>
-            <if test="breakTimes != null">
-                break_times = #{breakTimes,jdbcType=INTEGER},
+            <if test="state != null">
+                state = #{state,jdbcType=VARCHAR},
             </if>
         </set>
         where id = #{id,jdbcType=INTEGER}
@@ -193,14 +199,14 @@
         treatment_plan = #{treatmentPlan,jdbcType=VARCHAR},
         treatment_times = #{treatmentTimes,jdbcType=INTEGER},
         to_hospital_times = #{toHospitalTimes,jdbcType=INTEGER},
-        break_times = #{breakTimes,jdbcType=INTEGER}
+        state = #{state,jdbcType=VARCHAR}
         where id = #{id,jdbcType=INTEGER}
     </update>
 
     <select id="selectList" parameterType="map" resultType="MedicalRecordListVo">
         select
         t1.id, patient_id, first_in_hospital_date, severity, is_in_hospital, next_to_hospital_date,
-        treatment_plan, treatment_times, to_hospital_times, break_times, t2.medical_group, t2.username, t2.sex, t2.age, t2.phone_number,t1.state
+        treatment_plan, treatment_times, to_hospital_times,  t2.medical_group, t2.username, t2.sex, t2.age, t2.phone_number,t1.state
         from medical_record t1 LEFT JOIN (SELECT * FROM user WHERE athorization='1') t2
         ON t1.patient_id=t2.id
         <where>
@@ -209,6 +215,7 @@
             <if test="medicalRecordNo != null">AND t1.id = #{medicalRecordNo}</if>
             <if test="medicalGroup != null">AND t2.medical_group = #{medicalGroup}</if>
             <if test="state != null">AND t1.state = #{state}</if>
+            <if test="isInHospital != null">AND t1.is_in_hospital = #{isInHospital}</if>
         </where>
     </select>
 </mapper>

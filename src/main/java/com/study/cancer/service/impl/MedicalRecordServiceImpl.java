@@ -3,6 +3,7 @@ package com.study.cancer.service.impl;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.study.cancer.dao.ApplyMapper;
+import com.study.cancer.dao.BedMapper;
 import com.study.cancer.dao.MedicalRecordMapper;
 import com.study.cancer.model.*;
 import com.study.cancer.service.ApplyService;
@@ -22,6 +23,27 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
 
     @Resource
     ApplyMapper applyMapper;
+
+    @Resource
+    BedMapper bedMapper;
+
+    @Override
+    public CommonResult resetBed(String patientId) {
+        CommonResult<Object> result = new CommonResult<>();
+        Bed bed = bedMapper.selectByPatient(patientId);
+        if (bed != null) {
+            bed.setPatientId("");
+            bed.setState("0");
+            int update = bedMapper.updateByPrimaryKeySelective(bed);
+            if (update > 0) {
+                result.setSuccess(true);
+                result.setMessage("重置床位成功");
+            }
+        } else {
+            result.setMessage("没有找到床位");
+        }
+        return result;
+    }
 
     @Override
     public CommonResult editRecord(MedicalRecord medicalRecord) {

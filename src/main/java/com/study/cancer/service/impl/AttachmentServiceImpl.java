@@ -56,7 +56,7 @@ public class AttachmentServiceImpl implements AttachmentService {
         CommonResult<Object> result = new CommonResult<>();
         HashMap<Object, Object> map = new HashMap<>();
         map.put("medicalRecordNo", medicalRecordNo);
-        map.put("applicationId", applyId);
+        map.put("applyId", applyId);
         map.put("treatmentProcessId", treatmentProcessId);
         List<Attachment> attachments = attachmentMapper.selectList(map);
         if (attachments != null && attachments.size() > 0) {

@@ -11,6 +11,7 @@ import com.aliyuncs.profile.DefaultProfile;
 import com.aliyuncs.profile.IClientProfile;
 import com.aliyuncs.http.MethodType;
 import com.study.cancer.dao.AttachmentMapper;
+import com.study.cancer.dao.UserMapper;
 import com.study.cancer.model.*;
 import com.study.cancer.service.AttachmentService;
 import com.study.cancer.service.LoginService;
@@ -53,6 +54,9 @@ public class BaseController {
     @Resource
     SystemWebSocketHandler systemWebSocketHandler;
 
+    @Resource
+    UserMapper userMapper;
+
     @RequestMapping("/loginPage")
     public String loginPage() {
         return "/login";
@@ -72,7 +76,7 @@ public class BaseController {
         return request.getSession(true);
     }
 
-    public String sendMsg(Integer sendTo, String msg, String tabTitle, String url, String type, String state) throws IOException {
+    public String sendMsg(Integer sendTo, String msg, String tabTitle, String url, String type, String state, String... system) {
         Message message = new Message();
         message.setContent(msg);
         message.setTabTitle(tabTitle);
@@ -81,8 +85,12 @@ public class BaseController {
         message.setMessageType(type);//执行请求0或回执信息1
         message.setSendTo(sendTo);
         message.setSendDate(new Date());
-        message.setSendFromName(((User) getSession().getAttribute("loginUser")).getUsername());
-        message.setSendFrom(((User) getSession().getAttribute("loginUser")).getId());
+        if (system.length > 0) {//系统消息
+            message.setSendFromName(system[0]);
+        } else {
+            message.setSendFromName(getLoginUser().getUsername());
+            message.setSendFrom(((User) getSession().getAttribute("loginUser")).getId());
+        }
         CommonResult result = messageService.addMessage(message);
         if (result.isSuccess()) {
             String jsonMessage = JSONObject.toJSON(message).toString();
@@ -160,6 +168,17 @@ public class BaseController {
             //必填:短信模板-可在短信控制台中找到
             request.setTemplateCode(SMSConstant.REGISTER_CODE);
             request.setTemplateParam("{\"code\":" + map.get("code") + "}");
+        } else if (type.equals(SMSConstant.NOTICE_DOCTOR_CONTACT_PATIENT)) {
+            //必填:短信模板-可在短信控制台中找到
+            request.setTemplateCode(SMSConstant.NOTICE_DOCTOR_CONTACT_PATIENT);
+            request.setTemplateParam("{\"patientId\":" + map.get("patientId") + "}");
+            request.setTemplateParam("{\"patientName\":" + map.get("patientName") + "}");
+            request.setTemplateParam("{\"patientPhone\":" + map.get("patientPhone") + "}");
+        } else if (type.equals(SMSConstant.NOTICE_PATIENT_CONTACT_DOCTOR)) {
+            //必填:短信模板-可在短信控制台中找到
+            request.setTemplateCode(SMSConstant.NOTICE_PATIENT_CONTACT_DOCTOR);
+            request.setTemplateParam("{\"doctorName\":" + map.get("doctorName") + "}");
+            request.setTemplateParam("{\"doctorPhone\":" + map.get("doctorPhone") + "}");
         }
         //请求失败这里会抛ClientException异常
         /*SendSmsResponse sendSmsResponse = acsClient.getAcsResponse(request);
@@ -406,6 +425,7 @@ public class BaseController {
                         attachment.setAttachmentName(fileName);
                         attachment.setAttachmentPath(path + File.separator + recordNo + File.separator);
                         attachment.setMedicalRecordNo(recordNo + "");
+                        attachment.setApplyId("" + applyNo);
                         attachment.setTreatmentProcessId(treatmentProcessId);
                         attachment.setType(prefix);
                         result = attachmentService.addAttachment(attachment);

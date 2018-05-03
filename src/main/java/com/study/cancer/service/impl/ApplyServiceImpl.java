@@ -84,7 +84,7 @@ public class ApplyServiceImpl implements ApplyService {
     }
 
     @Override
-    public PageInfo getList(int page, int rows, Integer patientId, String applyStartDate, String applyEndDate, String state, String patientName, Integer medicalRecordNo) {
+    public PageInfo getList(int page, int rows, Integer patientId, String applyStartDate, String applyEndDate, String state, String patientName, Integer medicalRecordNo, String times, String medicalGroup) {
         PageHelper.startPage(page, rows);
         HashMap<Object, Object> map = new HashMap<>();
         map.put("medicalRecordNo", medicalRecordNo);
@@ -93,6 +93,8 @@ public class ApplyServiceImpl implements ApplyService {
         map.put("applyStartDate", applyStartDate);
         map.put("applyEndDate", applyEndDate);
         map.put("state", state);
+        map.put("times", times);
+        map.put("medicalGroup", medicalGroup);
         List<ApplyListVo> applyList = applyMapper.selectList(map);
         return new PageInfo(applyList);
     }
@@ -140,6 +142,7 @@ public class ApplyServiceImpl implements ApplyService {
             if (applies != null && applies.size() > 0) {
                 for (Apply apply : applies) {
                     apply.setState(ApplyStateConstant.FINISH_LINE_UP);//排队完成
+                    apply.setIsVisible("1");
                     Calendar calendar = Calendar.getInstance();
                     Date now = new Date();
                     calendar.setTime(now);

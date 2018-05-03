@@ -53,6 +53,7 @@
 <div>
     <div style="padding-top: 10px" class="row">
         <form method="post" id="applyForm" enctype="multipart/form-data">
+            <input type="hidden" name="medicalRecordNo" value="${medicalRecordNo}"/>
             <div class="userInfo">
                 <div class="row ">
                     <div class="col-md-6 col-sm-6">
@@ -214,7 +215,7 @@
                     </c:if>
                     <%--主任医师级才能评定，或患者二次入院时，治疗组医生评定自己组内患者--%>
                     <c:if test="${(applyInfo.state eq 1 and loginUser.athorization eq 3)
-                     || (applyInfo.medicalGroup eq loginUser.medicalGroup)}">
+                     || ((applyInfo.medicalGroup eq loginUser.medicalGroup) and applyInfo.state eq 1)}">
                         <button onclick="openJuge()" type="button" class="btn btn-primary"
                                 style="margin-left: 15px;">危重度评定
                         </button>
@@ -272,7 +273,9 @@
         var params = new Object();
         params.applyId = ${applyInfo.id}
             $.post("${ctx}/apply/pass", params, function (result) {
-                $.messager.alert('提示', result.message);
+                $.messager.alert('提示', result.message, "info", function () {
+                    window.location.reload();
+                });
             });
     }
 
@@ -344,6 +347,7 @@
                 async: true,
                 success: function (data) {
                     $.messager.alert('提示', data, 'info', function () {
+                        window.location.reload();
                         $("#jugeDialog").window("close");
                     });
                 }
@@ -365,7 +369,7 @@
                     },
                     async: true,
                     success: function (data) {
-
+                        $.messager.alert("提示", "发送请求成功", "info")
                     }
                 });
             }
