@@ -22,4 +22,10 @@ public interface ApplyService {
     CommonResult arrange();
 
     CommonResult modifyApply(Apply apply);
+
+    CommonResult waitDaysStatistics(String year);
+
+    CommonResult getNumOfMonth(String year);
+
+    CommonResult getNumOfSeverity(String year, String month);
 }

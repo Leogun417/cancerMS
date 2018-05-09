@@ -40,7 +40,8 @@ public class ApplyServiceImpl implements ApplyService {
                 String state = oldApply.getState();
                 if (state.equals(ApplyStateConstant.WAIT_TO_CHECK_DATA)
                         || state.equals(ApplyStateConstant.WAIT_TO_CHECK_CONDITION)
-                        || state.equals(ApplyStateConstant.LINE_UP)) {
+                        || state.equals(ApplyStateConstant.LINE_UP)
+                        || state.equals(ApplyStateConstant.FINISH_LINE_UP)) {
                     result.setMessage("申请已提交过，请勿重复提交");
                     return result;
                 }
@@ -185,6 +186,55 @@ public class ApplyServiceImpl implements ApplyService {
             result.setSuccess(true);
         } else {
             result.setMessage("失败！");
+        }
+        return result;
+    }
+
+    @Override
+    public CommonResult waitDaysStatistics(String year) {
+        Map map = new HashMap();
+        CommonResult<Object> result = new CommonResult<>();
+        map.put("year", year);
+        List<ApplyListVo> applyListVos = applyMapper.selectWaitDay(map);
+        if (applyListVos != null && applyListVos.size() > 0) {
+            result.setMessage("获取平均等待时间成功");
+            result.setSuccess(true);
+            result.setData(applyListVos);
+        } else {
+            result.setMessage("获取平均等待时间失败");
+        }
+        return result;
+    }
+
+    @Override
+    public CommonResult getNumOfMonth(String year) {
+        CommonResult<Object> result = new CommonResult<>();
+        Map<Object, Object> map = new HashMap<>();
+        map.put("year", year);
+        List<Integer> maps = applyMapper.selectNumOfMonth(map);
+        if (maps != null && maps.size() > 0) {
+            result.setSuccess(true);
+            result.setMessage("获取月总申请成功");
+            result.setData(maps);
+        } else {
+            result.setMessage("获取月总申请失败");
+        }
+        return result;
+    }
+
+    @Override
+    public CommonResult getNumOfSeverity(String year, String month) {
+        CommonResult<Object> result = new CommonResult<>();
+        Map<Object, Object> map = new HashMap<>();
+        map.put("year", year);
+        map.put("month", month);
+        List<ApplyListVo> applyListVos = applyMapper.selectNumOfSeverity(map);
+        if (applyListVos != null && applyListVos.size() > 0) {
+            result.setSuccess(true);
+            result.setMessage("获取单月入院量成功");
+            result.setData(applyListVos);
+        } else {
+            result.setMessage("获取单月入院量失败");
         }
         return result;
     }

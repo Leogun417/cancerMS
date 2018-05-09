@@ -13,9 +13,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Controller
 @RequestMapping(value = "/apply")
@@ -293,6 +291,104 @@ public class ApplyController extends BaseController {
             result.setMessage("无治疗记录");
             return result;
         }
+    }
+
+    @RequestMapping("/showStatistic")
+    public String showStatistic() {
+        return "/statistics";
+    }
+
+    @RequestMapping("/getStatisticsData")
+    @ResponseBody
+    public CommonResult getStatisticsData(String year) {
+        CommonResult<Object> statisticsResult = new CommonResult<>();
+        CommonResult result = applyService.waitDaysStatistics(year);
+        CommonResult numOfMonth = applyService.getNumOfMonth(year);
+        if (!numOfMonth.isSuccess()) {
+            statisticsResult.setMessage(numOfMonth.getMessage());
+            return statisticsResult;
+        }
+        if (result.isSuccess()) {
+            List<ApplyListVo> datas = (List<ApplyListVo>) result.getData();
+            Map<Object, Object> resulMap = new HashMap<>();
+            ArrayList<Object> oneLevel = new ArrayList<>();
+            ArrayList<Object> twoLevel = new ArrayList<>();
+            ArrayList<Object> treeLevel = new ArrayList<>();
+            ArrayList<Object> fourLevel = new ArrayList<>();
+            ArrayList<Object> monthList = new ArrayList<>();
+            int one=0, two=0, tree=0, four=0;
+            for (ApplyListVo data : datas) {
+                if (!monthList.contains(data.getToMonth())) {
+                    monthList.add(data.getToMonth());
+                }
+                int toMonth = Integer.parseInt(data.getToMonth());
+                int minMonth = Integer.parseInt((String) monthList.get(0));
+                if (data.getSeverity().equals("1")) {
+                    while (toMonth > minMonth && one == 0) {
+                        toMonth--;
+                        oneLevel.add("");
+                    }
+                    one++;
+                    oneLevel.add(data.getWaitDays());
+                } else if (data.getSeverity().equals("2")) {
+                    while (toMonth > minMonth && two == 0) {
+                        toMonth--;
+                        twoLevel.add("");
+                    }
+                    two++;
+                    twoLevel.add(data.getWaitDays());
+                } else if (data.getSeverity().equals("3")) {
+                    while (toMonth > minMonth && tree == 0) {
+                        toMonth--;
+                        treeLevel.add("");
+                    }
+                    tree++;
+                    treeLevel.add(data.getWaitDays());
+                } else {
+                    while (toMonth > minMonth && four == 0) {
+                        toMonth--;
+                        fourLevel.add("");
+                    }
+                    four++;
+                    fourLevel.add(data.getWaitDays());
+                }
+            }
+            resulMap.put("oneLevel", oneLevel);
+            resulMap.put("twoLevel", twoLevel);
+            resulMap.put("treeLevel", treeLevel);
+            resulMap.put("fourLevel", fourLevel);
+            resulMap.put("monthList", monthList);
+            resulMap.put("monthNumList", numOfMonth.getData());
+            statisticsResult.setSuccess(true);
+            statisticsResult.setData(resulMap);
+        }
+        return statisticsResult;
+    }
+
+    @RequestMapping("/getPieData")
+    @ResponseBody
+    public CommonResult getPieData(String year, String month) {
+        CommonResult<Object> result = new CommonResult<>();
+        Map<Object, Object> resultMap = new HashMap<>();
+        CommonResult numOfSeverity = applyService.getNumOfSeverity(year, month);
+        if (numOfSeverity.isSuccess()) {
+            List<ApplyListVo> numOfSeverityData = (List<ApplyListVo>) numOfSeverity.getData();
+            for (ApplyListVo applyListVo : numOfSeverityData) {
+                if (applyListVo.getSeverity().equals("1")) {
+                    resultMap.put("one", applyListVo.getNumOfSeverity());
+                } else if (applyListVo.getSeverity().equals("2")) {
+                    resultMap.put("two", applyListVo.getNumOfSeverity());
+                } else if (applyListVo.getSeverity().equals("3")) {
+                    resultMap.put("tree", applyListVo.getNumOfSeverity());
+                } else if (applyListVo.getSeverity().equals("4")) {
+                    resultMap.put("four", applyListVo.getNumOfSeverity());
+                }
+            }
+            result.setMessage(numOfSeverity.getMessage());
+            result.setSuccess(numOfSeverity.isSuccess());
+            result.setData(resultMap);
+        }
+        return result;
     }
 
 }

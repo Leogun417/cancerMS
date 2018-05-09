@@ -77,6 +77,46 @@ public class ApplyListVo extends Apply implements Serializable {
 
     private String bedNo;
 
+    private String toMonth;
+
+    private String waitDays;
+
+    private String severity;
+
+    private String numOfSeverity;
+
+    public String getNumOfSeverity() {
+        return numOfSeverity;
+    }
+
+    public void setNumOfSeverity(String numOfSeverity) {
+        this.numOfSeverity = numOfSeverity;
+    }
+
+    public String getToMonth() {
+        return toMonth;
+    }
+
+    public void setToMonth(String toMonth) {
+        this.toMonth = toMonth;
+    }
+
+    public String getWaitDays() {
+        return waitDays;
+    }
+
+    public void setWaitDays(String waitDays) {
+        this.waitDays = waitDays;
+    }
+
+    public String getSeverity() {
+        return severity;
+    }
+
+    public void setSeverity(String severity) {
+        this.severity = severity;
+    }
+
     public String getBedNo() {
         return bedNo;
     }

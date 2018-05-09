@@ -60,4 +60,10 @@ public interface ApplyMapper {
     List<ApplyListVo> selectList(Map<Object, Object> map);
 
     List<Apply> selectByLimitAndWaitLevel(Map map);
+
+    List<ApplyListVo> selectWaitDay(Map map);
+
+    List<Integer> selectNumOfMonth(Map map);
+
+    List<ApplyListVo> selectNumOfSeverity(Map map);
 }

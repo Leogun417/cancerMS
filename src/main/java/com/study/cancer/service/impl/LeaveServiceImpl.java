@@ -27,6 +27,7 @@ public class LeaveServiceImpl implements LeaveService {
 
     @Resource
     LeucocyteNeutrophilConfigMapper leucocyteNeutrophilConfigMapper;
+
     @Override
     public CommonResult addLeaveRecord(LeaveRecord leaveRecord) {
         CommonResult<Object> result = new CommonResult<>();
@@ -65,32 +66,37 @@ public class LeaveServiceImpl implements LeaveService {
         Map map = new HashMap();
         map.put("state", "0");
         map.put("isInHospital", "no");
+        map.put("check", "check");
         List<MedicalRecordListVo> medicalRecordListVos = medicalRecordMapper.selectList(map);
-        for (MedicalRecordListVo medicalRecordVo : medicalRecordListVos) {
-            List<LeaveData> leaveDataList = leaveDataMapper.selectWeekData(medicalRecordVo.getId() + "");
-            if (leaveDataList != null && leaveDataList.size() == 0) {
-                noDataList.add(medicalRecordVo);
-            } else {
-                LeaveData leaveData = leaveDataList.get(0);
-                if ("0".equals(leaveData.getIsChecked())) {//本周还未核查过
-                    leaveData.setIsChecked("1");
-                    if ((Integer.parseInt(leaveData.getLeucocyteConcentration())
-                            <= Integer.parseInt(leucocyteNeutrophilConfig.getDangerLeucocyte()))
-                            || (Integer.parseInt(leaveData.getNeutrophilConcentration())
-                            <= Integer.parseInt(leucocyteNeutrophilConfig.getDangerNeutrophil()))) {//低于危险值
-                        dangerList.add(medicalRecordVo);
+        if (medicalRecordListVos != null && medicalRecordListVos.size() > 0) {
+            for (MedicalRecordListVo medicalRecordVo : medicalRecordListVos) {
+                if (medicalRecordVo.getNextToHospitalDate() != null) {
+                    List<LeaveData> leaveDataList = leaveDataMapper.selectWeekData(medicalRecordVo.getId() + "");
+                    if (leaveDataList != null && leaveDataList.size() == 0) {
+                        noDataList.add(medicalRecordVo);
                     } else {
-                        if (Integer.parseInt(leaveData.getLeucocyteConcentration())
-                                < Integer.parseInt(leucocyteNeutrophilConfig.getLeucocyte())) {
-                            leucocyteBelowList.add(medicalRecordVo);
+                        LeaveData leaveData = leaveDataList.get(0);
+                        if ("0".equals(leaveData.getIsChecked())) {//本周还未核查过
+                            leaveData.setIsChecked("1");
+                            if ((Integer.parseInt(leaveData.getLeucocyteConcentration())
+                                    <= Integer.parseInt(leucocyteNeutrophilConfig.getDangerLeucocyte()))
+                                    || (Integer.parseInt(leaveData.getNeutrophilConcentration())
+                                    <= Integer.parseInt(leucocyteNeutrophilConfig.getDangerNeutrophil()))) {//低于危险值
+                                dangerList.add(medicalRecordVo);
+                            } else {
+                                if (Integer.parseInt(leaveData.getLeucocyteConcentration())
+                                        < Integer.parseInt(leucocyteNeutrophilConfig.getLeucocyte())) {
+                                    leucocyteBelowList.add(medicalRecordVo);
+                                }
+                                if (Integer.parseInt(leaveData.getNeutrophilConcentration())
+                                        < Integer.parseInt(leucocyteNeutrophilConfig.getNeutrophil())) {
+                                    neutrophilBelowList.add(medicalRecordVo);
+                                }
+                            }
                         }
-                        if (Integer.parseInt(leaveData.getNeutrophilConcentration())
-                                < Integer.parseInt(leucocyteNeutrophilConfig.getNeutrophil())) {
-                            neutrophilBelowList.add(medicalRecordVo);
-                        }
+
                     }
                 }
-
             }
         }
         resultMap.put("noDataList", noDataList);

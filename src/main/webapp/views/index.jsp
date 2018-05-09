@@ -50,7 +50,7 @@
         </div>
     </div>
     <div style="margin-top: 20px;margin-left:10px;margin-right: 50px">
-        <h1 style="display: inline;font-size: 26px;color: white">肿瘤患者化疗管理系统</h1>
+        <h1 style="display: inline;font-size: 23px;color: white">肿瘤患者化疗管理系统</h1>
         <div style="float: right" onMouseOver="show();" onMouseOut="hide()">
             <div id="userInfo" style="display:none;">
                 <span>

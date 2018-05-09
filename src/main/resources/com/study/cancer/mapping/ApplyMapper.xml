@@ -20,6 +20,7 @@
         <result column="is_visible" jdbcType="VARCHAR" property="isVisible"/>
         <result column="is_again" jdbcType="VARCHAR" property="isAgain"/>
     </resultMap>
+
     <sql id="Base_Column_List">
         <!--
           WARNING - @mbggenerated
@@ -285,5 +286,16 @@
         FROM apply t1 LEFT JOIN medical_record t2 ON t1.medical_record_no=t2.id LEFT JOIN user t3 ON t1.patient_id=t3.id
         WHERE t1.state='2'
         ORDER BY  datediff(CURDATE(), apply_date)*#{waitTimeWeight}+severity*#{severityWeight}-t3.break_times*#{breakAppointmentWeight} DESC limit #{limit}
+    </select>
+
+    <select id="selectWaitDay" parameterType="map" resultType="ApplyListVo">
+        SELECT count(*) AS num_of_severity, month(t1.to_hospital_date) as to_month, AVG(datediff(t1.to_hospital_date, t1.apply_date)) AS wait_days, t2.severity FROM
+  apply t1 LEFT JOIN medical_record t2 ON t1.medical_record_no=t2.id WHERE year(to_hospital_date)=#{year} AND t1.state='4' GROUP BY to_month, t2.severity ORDER BY to_month
+    </select>
+    <select id="selectNumOfMonth" parameterType="map" resultType="int">
+        SELECT COUNT(*) AS month_total FROM apply WHERE year(to_hospital_date)=#{year} AND state='4' GROUP BY month(to_hospital_date) ORDER BY month(to_hospital_date)
+    </select>
+    <select id="selectNumOfSeverity" parameterType="map" resultType="ApplyListVo">
+        SELECT count(*) AS num_of_severity, severity FROM apply t1 LEFT JOIN medical_record t2 ON t1.medical_record_no=t2.id WHERE year(to_hospital_date)=#{year} AND t1.state='4' AND month(to_hospital_date)=#{month} GROUP BY severity ORDER BY severity
     </select>
 </mapper>

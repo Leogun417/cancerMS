@@ -232,7 +232,7 @@
                 {
                     field: 'severity',
                     title: '病情',
-                    width: 40,
+                    width: 20,
                     formatter: function (value, row, index) {
                         if (value == '0') {
                             return "轻微";
@@ -287,7 +287,7 @@
                 {
                     field: 'action',
                     title: '操作',
-                    width: 50,
+                    width: 60,
                     formatter: function (value, row, index) {
                         var content = "<a class='easyui-linkbutton showProcesscls' onclick=\"showProcessList('" + row.id + "')\"></a>";
                         <c:if test="${loginUser.athorization eq 2}">

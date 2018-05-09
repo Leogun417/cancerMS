@@ -216,6 +216,7 @@
             <if test="medicalGroup != null">AND t2.medical_group = #{medicalGroup}</if>
             <if test="state != null">AND t1.state = #{state}</if>
             <if test="isInHospital != null">AND t1.is_in_hospital = #{isInHospital}</if>
+            <if test="check != null">AND t1.next_to_hospital_date IS TRUE</if>
         </where>
     </select>
 
