@@ -3,6 +3,7 @@ package com.study.cancer.dao;
 import com.study.cancer.model.Bed;
 
 import java.util.List;
+import java.util.Map;
 
 public interface BedMapper {
     /**
@@ -56,4 +57,6 @@ public interface BedMapper {
     List<Bed> selectNumByState(String state);
 
     Bed selectByPatient(String patientId);
+
+    List<Bed> selectList(Map map);
 }

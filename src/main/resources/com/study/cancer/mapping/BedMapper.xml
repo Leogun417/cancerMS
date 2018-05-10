@@ -141,4 +141,16 @@
     from bed
     where patient_id=#{_parameter}
   </select>
+  <select id="selectList" parameterType="map" resultMap="BaseResultMap">
+    select
+    *
+    from bed
+    <where>
+      <if test="bedId != null">id = #{bedId}</if>
+      <if test="bedNo != null">AND bed_no LIKE CONCAT('%', #{bedNo}, '%')</if>
+      <if test="patientId != null">AND patient_id = #{patientId}</if>
+      <if test="state != null">AND state = #{state}</if>
+    </where>
+  </select>
+
 </mapper>

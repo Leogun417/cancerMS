@@ -323,6 +323,7 @@ public class ApplyController extends BaseController {
                 }
                 int toMonth = Integer.parseInt(data.getToMonth());
                 int minMonth = Integer.parseInt((String) monthList.get(0));
+                //第一次循环数据如果不属于最小月份，则用空串占位，不然会错位
                 if (data.getSeverity().equals("1")) {
                     while (toMonth > minMonth && one == 0) {
                         toMonth--;
