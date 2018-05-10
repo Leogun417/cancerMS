@@ -47,4 +47,13 @@ public class UserController extends BaseController {
         CommonResult result = userService.modifyUser(user);
         return result;
     }
+
+    @RequestMapping("/divideGroup")
+    @ResponseBody
+    public String divideGroup(String doctorIds, String groupId) {
+        String substring = doctorIds.substring(1, doctorIds.lastIndexOf("]"));
+        String[] userIds = substring.split(",");
+        userService.divideGroup(userIds, groupId);
+        return "success";
+    }
 }

@@ -49,4 +49,16 @@ public class UserServiceImpl implements UserService {
         }
         return result;
     }
+
+    @Override
+    public CommonResult divideGroup(String[] userIds, String groupId) {
+        CommonResult<Object> result = new CommonResult<>();
+        User user = new User();
+        for (String userId : userIds) {
+            user.setId(Integer.parseInt(userId));
+            user.setMedicalGroup(groupId);
+            modifyUser(user);
+        }
+        return result;
+    }
 }

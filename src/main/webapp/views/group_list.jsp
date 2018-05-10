@@ -3,7 +3,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">
 <html>
 <head>
-    <title>肿瘤患者化疗管理系统-床位列表</title>
+    <title>肿瘤患者化疗管理系统-治疗组列表</title>
     <style type="text/css">
     </style>
     <link rel="stylesheet" href="${ctxStatic}/js/bootstrap/css/bootstrap.min.css">
@@ -32,6 +32,24 @@
         span {
             font-size: 15px;
         }
+
+        .cancer-group {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .cancer-group label {
+            font-size: 15px;
+        }
+
+        .userInfo .cancer-group input {
+            font-size: 15px;
+            margin-left: 15px;
+        }
+
+        .userInfo .cancer-group select {
+            margin-left: 15px;
+        }
     </style>
 </head>
 
@@ -42,8 +60,8 @@
         <table width="100%" id="dtList" toolbar="#tb"></table>
         <div id="tb" style="margin:5px;height:auto">
             <div style="margin-bottom: 5px">
-                <span>床位编号:</span>
-                <input class="easyui-textbox" id="bedNo">
+                <span>治疗组名称:</span>
+                <input class="easyui-textbox" id="name">
                 <a style="margin-left: 15px" id="search" href="javascript:void(0);" class="easyui-linkbutton"
                    data-options="iconCls:'icon-search'">查询</a>
                 <a style="margin-left: 15px" id="add" href="javascript:void(0);" class="easyui-linkbutton"
@@ -52,36 +70,55 @@
         </div>
     </div>
 </div>
-<div id="win" class="easyui-window userInfo" closed="true" title="新增床位"
+<div id="win" class="easyui-window userInfo" closed="true" title="新增治疗组"
      style="display:none;width:300px;height:200px;">
-    <form id="addBedForm" style="margin-top: 15px;margin-left: 10px">
+    <form id="addGroupForm" style="margin-top: 15px;margin-left: 10px">
         <div class="cancer-group row">
-            <label class="pull-left label-lg"><span>*</span>床位编号:</label>
+            <label class="pull-left label-lg"><span>*</span>治疗组名称:</label>
             <div>
                 <input style="border: solid 1px black" class="easyui-textbox"
-                       required="true" name="bedNo" id="bedNoOfForm"/>
+                       required="true" name="name" id="nameOfAdd"/>
             </div>
         </div>
         <div class="row">
-            <input type="submit" style="position: absolute;left: 10px;bottom: 10px;background-color: #0984ff;color: white" class="easyui-linkbutton" value="确认"/>
+            <input type="submit"
+                   style="position: absolute;left: 10px;bottom: 10px;background-color: #0984ff;color: white"
+                   class="easyui-linkbutton" value="确认"/>
         </div>
     </form>
 </div>
-<div id="win2" class="easyui-window userInfo" closed="true" title="修改床位信息"
+<div id="win2" class="easyui-window userInfo" closed="true" title="修改治疗组信息"
      style="display:none;width:300px;height:200px;">
-    <form id="editBedForm" style="margin-top: 15px;margin-left: 10px">
+    <form id="editGroupForm" style="margin-top: 15px;margin-left: 10px">
         <div class="cancer-group row">
-            <label class="pull-left label-lg"><span>*</span>床位编号:</label>
+            <label class="pull-left label-lg"><span>*</span>治疗组名称:</label>
             <div>
-                <input type="hidden" name="bedId" id="bedId"/>
+                <input type="hidden" name="groupId" id="groupId"/>
                 <input style="border: solid 1px black" class="easyui-textbox"
-                       required="true" name="bedNo" id="bedNoOfEdit"/>
+                       required="true" name="name" id="nameOfEdit"/>
             </div>
         </div>
         <div class="row">
-            <input type="submit" style="position: absolute;left: 10px;bottom: 10px;background-color: #0984ff;color: white" class="easyui-linkbutton" value="确认"/>
+            <input type="submit"
+                   style="position: absolute;left: 10px;bottom: 10px;background-color: #0984ff;color: white"
+                   class="easyui-linkbutton" value="确认"/>
         </div>
     </form>
+</div>
+<div id="win3" class="easyui-window userInfo" closed="true" title="添加医生"
+     style="display:none;width:400px;height:300px;">
+    <input type="hidden" id="groupIdOfAddDoctor"/>
+    <table width="100%" id="doctorList" toolbar="#tb2"></table>
+    <div id="tb2" style="margin:5px;height:auto">
+        <div style="margin-bottom: 5px">
+            <span>姓名:</span>
+            <input class="easyui-textbox" id="username">
+            <a style="margin-left: 15px" id="searchUsername" href="javascript:void(0);" class="easyui-linkbutton"
+               data-options="iconCls:'icon-search'">查询</a>
+            <a style="margin-left: 15px" id="confirmAddDoctor" href="javascript:void(0);" class="easyui-linkbutton"
+               data-options="iconCls:'icon-add'">添加</a>
+        </div>
+    </div>
 </div>
 <script src="${ctxStatic}/js/jquery/jQuery-2.2.0.min.js"
         type="text/javascript" charset="UTF-8"></script>
@@ -91,8 +128,81 @@
         type="text/javascript" charset="UTF-8"></script>
 <script src="${ctxStatic}/js/idCardNoValidation.js"></script>
 <script type="text/javascript">
-    $('#addBedForm').form({
-        url: '${ctx}/bed/add',
+    $("#confirmAddDoctor").click(function () {
+        var users = $("#doctorList").datagrid('getSelections');
+        var userIds = [];
+        if (users.length == 0) {
+            $.messager.alert("提示", "请至少选中一行！", "error");
+            return;
+        }
+        $.each(users, function (index, value) {
+            userIds.push(value.id);
+        });
+        $.ajax({
+            type: 'POST',
+            url: "${ctx}/user/divideGroup",//根据是否有医生码区分病人和医生权限
+            dataType: "text",
+            data: {
+                "doctorIds": JSON.stringify(userIds),
+                "groupId": $("#groupIdOfAddDoctor").val()
+            },
+            async: false,
+            success: function (data) {
+                $.messager.alert("提示", "分组成功", "info");
+            }
+        });
+    });
+    $('#doctorList').datagrid({
+        url: '${ctx}/user/list',
+        idField: 'id',
+        title: '',
+        fit: true,
+        loadMsg: '数据加载中...',
+        rownumbers: true,
+        singleSelect: false,
+        pagination: true,
+        pageList: [5, 10, 15],
+        fitColumns: true,
+        nowrap: true,
+        queryParams: {
+            username: function () {
+                return $("#username").val()
+            }
+        },
+        loadFilter: function (data) {
+            var result = new Object();
+            result.total = data.total;
+            result.rows = data.list;
+            return result;
+        },
+        columns: [
+            [
+                {
+                    field: 'id',
+                    title: 'id',
+                    width: 20,
+                    checkbox: true
+                },
+                {
+                    field: 'username',
+                    title: '姓名',
+                    width: 50
+                }
+            ]
+        ],
+        onLoadSuccess: function (data) {
+            $("td").each(function () {
+                $(this).attr("title", $(this).text());
+            });
+            $("#doctorList").datagrid("clearSelections");
+            $('#doctorList').datagrid('fixRowHeight');
+        }
+    })
+    $("#searchUsername").click(function () {
+        $('#doctorList').datagrid('reload');
+    });
+    $('#addGroupForm').form({
+        url: '${ctx}/group/add',
         onSubmit: function () {
             return $(this).form('validate');
         },
@@ -105,8 +215,8 @@
             });
         }
     });
-    $('#editBedForm').form({
-        url: '${ctx}/bed/edit',
+    $('#editGroupForm').form({
+        url: '${ctx}/group/edit',
         onSubmit: function () {
             return $(this).form('validate');
         },
@@ -126,7 +236,7 @@
         $("#win").window('open');
     });
     $('#dtList').datagrid({
-        url: '${ctx}/bed/list',
+        url: '${ctx}/group/list',
         idField: 'id',
         title: '',
         fit: true,
@@ -138,8 +248,8 @@
         fitColumns: true,
         nowrap: true,
         queryParams: {
-            bedNo: function () {
-                return $("#bedNo").val()
+            name: function () {
+                return $("#name").val()
             }
         },
         loadFilter: function (data) {
@@ -157,29 +267,17 @@
                     checkbox: true
                 },
                 {
-                    field: 'bedNo',
-                    title: '床位编号',
+                    field: 'name',
+                    title: '治疗组名称',
                     width: 50
-                },
-                {
-                    field: 'state',
-                    title: '状态',
-                    width: 50,
-                    formatter: function (value, row, index) {
-                        if (value == '0') {
-                            return "空置";
-                        }
-                        if (value == '1') {
-                            return "占用";
-                        }
-                    }
                 },
                 {
                     field: 'action',
                     title: '操作',
                     width: 20,
                     formatter: function (value, row, index) {
-                        var content = "<a class='editcls' class='easyui-linkbutton' onclick=\"edit(" + row.id + ",\'" + row.bedNo + "\')\"></a>";
+                        var content = "<a class='editcls' class='easyui-linkbutton' onclick=\"edit(" + row.id + ",\'" + row.name + "\')\"></a>" +
+                            "<a class='addDoctorcls' class='easyui-linkbutton' onclick=\"addDoctor(" + row.id + ")\"></a>";
                         return content;
                     }
                 }
@@ -190,15 +288,22 @@
                 $(this).attr("title", $(this).text());
             });
             $('.editcls').linkbutton({text: '修改', plain: true, iconCls: 'icon-edit'});
+            $('.addDoctorcls').linkbutton({text: '添加医生', plain: true, iconCls: 'icon-add'});
             $("#dtList").datagrid("clearSelections");
             $('#dtList').datagrid('fixRowHeight');
         }
     })
 
-    function edit(bedId, bedNo) {
-        $("#bedId").val(bedId);
-        $("#bedNoOfEdit").textbox('setValue', bedNo);
+
+    function edit(groupId, name) {
+        $("#groupId").val(groupId);
+        $("#nameOfEdit").textbox('setValue', name);
         $("#win2").window('open');
+    }
+
+    function addDoctor(groupId) {
+        $("#groupIdOfAddDoctor").val(groupId);
+        $("#win3").window('open');
     }
 
     $.extend($.fn.validatebox.defaults.rules, {

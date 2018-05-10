@@ -3,6 +3,7 @@ package com.study.cancer.dao;
 import com.study.cancer.model.MedicalGroup;
 
 import java.util.List;
+import java.util.Map;
 
 public interface MedicalGroupMapper {
     /**
@@ -53,5 +54,5 @@ public interface MedicalGroupMapper {
      */
     int updateByPrimaryKey(MedicalGroup record);
 
-    List<MedicalGroup> selectList();
+    List<MedicalGroup> selectList(Map map);
 }

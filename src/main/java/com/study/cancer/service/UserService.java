@@ -7,4 +7,6 @@ public interface UserService {
     CommonResult showDoctorList(int page, int rows, String username, String phoneNumber, String athorization);
 
     CommonResult modifyUser(User user);
+
+    CommonResult divideGroup(String[] userIds, String groupId);
 }
