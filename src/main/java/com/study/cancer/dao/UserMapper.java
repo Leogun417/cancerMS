@@ -60,4 +60,5 @@ public interface UserMapper {
 
     List<User> selectByGroup(Map map);
 
+    List<User> selectDoctorList(Map map);
 }

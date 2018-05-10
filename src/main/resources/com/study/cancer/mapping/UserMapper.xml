@@ -243,4 +243,15 @@
             </if>
         </where>
     </select>
+    <select id="selectDoctorList" parameterType="map" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from user
+        <where>
+            athorization &gt; 1
+            <if test="athorization != null">AND athorization=#{athorization}</if>
+            <if test="username != null">AND username LIKE CONCAT('%',#{username},'%')</if>
+            <if test="phoneNumber != null">AND phone_number=#{phoneNumber}</if>
+        </where>
+    </select>
 </mapper>

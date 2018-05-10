@@ -52,8 +52,63 @@
     var date = new Date();
     var year = date.getFullYear();
     var startYear = year - 5;
+    $("#search").click(function () {
+        myChart1.showLoading();
+        $.ajax({
+            type: 'POST',
+            url: "${ctx}/apply/getStatisticsData",//根据是否有医生码区分病人和医生权限
+            dataType: "json",
+            data: {"year": $("#year").val()},
+            async: true,
+            success: function (data) {
+                myChart1.hideLoading();
+                myChart1.setOption(
+                    option = {
+                        xAxis: [
+                            {
+                                data: data.data.monthList
+                            }
+                        ],
+                        series: [
+                            {
+                                name: '病情轻微',
+                                type: 'bar',
+                                data: data.data.oneLevel
+                            },
+                            {
+                                name: '病情较重',
+                                type: 'bar',
+                                data: data.data.twoLevel
+                            },
+                            {
+                                name: '病情严重',
+                                type: 'bar',
+                                data: data.data.treeLevel
+                            },
+                            {
+                                name: '病情危急',
+                                type: 'bar',
+                                data: data.data.fourLevel
+                            },
+                            {
+                                name: '月总入院人数',
+                                type: 'line',
+                                yAxisIndex: 1,
+                                data: data.data.monthNumList
+                            }
+                        ]
+                    }
+                )
+            }
+        });
+    })
     while (startYear <= year) {
-        $("#year").append("<option value='" + startYear + "'>" + startYear + "</option>")
+        if (startYear == year) {
+            $("#year").append("<option selected value='" + startYear + "'>" + startYear + "</option>");
+            $("#search").click();
+        } else {
+            $("#year").append("<option value='" + startYear + "'>" + startYear + "</option>");
+        }
         startYear++;
     }
     myChart1.setOption(
@@ -153,56 +208,7 @@
         });
     });
 
-    $("#search").click(function () {
-        myChart1.showLoading();
-        $.ajax({
-            type: 'POST',
-            url: "${ctx}/apply/getStatisticsData",//根据是否有医生码区分病人和医生权限
-            dataType: "json",
-            data: {"year": $("#year").val()},
-            async: true,
-            success: function (data) {
-                myChart1.hideLoading();
-                myChart1.setOption(
-                    option = {
-                        xAxis: [
-                            {
-                                data: data.data.monthList
-                            }
-                        ],
-                        series: [
-                            {
-                                name: '病情轻微',
-                                type: 'bar',
-                                data: data.data.oneLevel
-                            },
-                            {
-                                name: '病情较重',
-                                type: 'bar',
-                                data: data.data.twoLevel
-                            },
-                            {
-                                name: '病情严重',
-                                type: 'bar',
-                                data: data.data.treeLevel
-                            },
-                            {
-                                name: '病情危急',
-                                type: 'bar',
-                                data: data.data.fourLevel
-                            },
-                            {
-                                name: '月总入院人数',
-                                type: 'line',
-                                yAxisIndex: 1,
-                                data: data.data.monthNumList
-                            }
-                        ]
-                    }
-                )
-            }
-        });
-    })
+
     myChart2.setOption(
         option = {
             title: {
